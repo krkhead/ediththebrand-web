@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { and, eq, ne } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
+import { requireAdmin, isValidUUID } from "@/lib/admin-guard";
 
 const ALLOWED_UPDATE_FIELDS = new Set([
   "name", "slug", "description", "price", "images",
@@ -15,6 +15,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    if (!isValidUUID(id)) {
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+    }
+
     const [product] = await db
       .select()
       .from(products)
@@ -34,13 +38,15 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (!guard.authorized) return guard.error;
 
   try {
     const { id } = await params;
+    if (!isValidUUID(id)) {
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+    }
+
     const body = await request.json();
 
     const sanitized = Object.fromEntries(
@@ -81,13 +87,15 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (!guard.authorized) return guard.error;
 
   try {
     const { id } = await params;
+    if (!isValidUUID(id)) {
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+    }
+
     await db.delete(products).where(eq(products.id, id));
     return NextResponse.json({ success: true });
   } catch (error) {

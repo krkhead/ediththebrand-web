@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
 import { and, eq, SQL } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
+import { requireAdmin } from "@/lib/admin-guard";
+
+const ALLOWED_CREATE_FIELDS = new Set([
+  "name", "slug", "description", "price", "images",
+  "category", "origin", "inStock", "featured",
+]);
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,22 +32,24 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (!guard.authorized) return guard.error;
 
   try {
     const body = await request.json();
-    const { name, slug, description, price, images, category, origin, inStock, featured } = body;
 
-    if (!name || !slug) {
+    const sanitized = Object.fromEntries(
+      Object.entries(body).filter(([key]) => ALLOWED_CREATE_FIELDS.has(key))
+    );
+
+    const { name, slug } = sanitized as { name?: string; slug?: string };
+    if (!name?.trim() || !slug?.trim()) {
       return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
     }
 
     const [product] = await db
       .insert(products)
-      .values({ name, slug, description, price, images, category, origin, inStock, featured })
+      .values(sanitized)
       .returning();
 
     return NextResponse.json(product, { status: 201 });

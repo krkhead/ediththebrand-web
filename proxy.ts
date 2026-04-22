@@ -1,7 +1,19 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-// Auth protection for /admin/* is handled inside app/admin/layout.tsx via auth()
-export default clerkMiddleware();
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAdminSignIn = createRouteMatcher(["/admin/sign-in(.*)"]);
+
+export default clerkMiddleware(async (auth, req) => {
+  // Allow the sign-in page through unauthenticated
+  if (isAdminSignIn(req)) return NextResponse.next();
+
+  // All other /admin/* routes require an active session at the edge
+  // (email restriction is the second layer inside layout.tsx)
+  if (isAdminRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [
