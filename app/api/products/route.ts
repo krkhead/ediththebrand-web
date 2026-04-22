@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { products } from "@/lib/db/schema";
+import { products, type NewProduct } from "@/lib/db/schema";
 import { and, eq, SQL } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin-guard";
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const [product] = await db
       .insert(products)
-      .values(sanitized)
+      .values(sanitized as NewProduct)
       .returning();
 
     return NextResponse.json(product, { status: 201 });
