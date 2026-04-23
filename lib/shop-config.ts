@@ -19,7 +19,7 @@ export type CouponDefinition = {
   label: string;
 };
 
-export const COUPON_DEFINITIONS: CouponDefinition[] = [
+export const FALLBACK_COUPON_DEFINITIONS: CouponDefinition[] = [
   {
     code: "ETB10",
     type: "percent",

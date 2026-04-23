@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  getCouponDiscount,
-  resolveCoupon,
-} from "@/lib/shop-utils";
+import { getCouponDiscount, normalizeCode, resolveCoupon } from "@/lib/shop-utils";
 import type { CouponDefinition } from "@/lib/shop-config";
+import { FALLBACK_COUPON_DEFINITIONS } from "@/lib/shop-config";
 
 export interface CartItem {
   id: string;
@@ -21,13 +19,15 @@ interface CartStore {
   items: CartItem[];
   isOpen: boolean;
   appliedCoupon: CouponDefinition | null;
+  availableCoupons: CouponDefinition[];
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  applyCoupon: (code: string) => { ok: boolean; message: string };
+  syncCoupons: () => Promise<void>;
+  applyCoupon: (code: string) => Promise<{ ok: boolean; message: string }>;
   clearCoupon: () => void;
   totalItems: () => number;
   totalPrice: () => number;
@@ -41,6 +41,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
       appliedCoupon: null,
+      availableCoupons: FALLBACK_COUPON_DEFINITIONS,
 
       addItem: (item) => {
         const existing = get().items.find((i) => i.id === item.id);
@@ -76,14 +77,45 @@ export const useCartStore = create<CartStore>()(
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
 
-      applyCoupon: (code) => {
+      syncCoupons: async () => {
+        try {
+          const response = await fetch("/api/coupons", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error("Failed to load coupons");
+          }
+
+          const data = (await response.json()) as CouponDefinition[];
+          set({
+            availableCoupons: data.map((coupon) => ({
+              code: normalizeCode(coupon.code),
+              type: coupon.type,
+              value: Number(coupon.value),
+              label: coupon.label,
+            })),
+          });
+
+          const currentCoupon = get().appliedCoupon;
+          if (
+            currentCoupon &&
+            !resolveCoupon(currentCoupon.code, get().availableCoupons)
+          ) {
+            set({ appliedCoupon: null });
+          }
+        } catch {
+          set({ availableCoupons: FALLBACK_COUPON_DEFINITIONS });
+        }
+      },
+
+      applyCoupon: async (code) => {
         const trimmedCode = code.trim();
 
         if (!trimmedCode) {
           return { ok: false, message: "Enter a coupon code to apply it." };
         }
 
-        const coupon = resolveCoupon(trimmedCode);
+        await get().syncCoupons();
+
+        const coupon = resolveCoupon(trimmedCode, get().availableCoupons);
         if (!coupon) {
           return { ok: false, message: "That coupon code is not valid." };
         }
@@ -112,6 +144,11 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "etb-cart",
+      partialize: (state) => ({
+        items: state.items,
+        isOpen: state.isOpen,
+        appliedCoupon: state.appliedCoupon,
+      }),
     }
   )
 );

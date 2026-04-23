@@ -1,4 +1,13 @@
-import { pgTable, uuid, text, numeric, jsonb, boolean, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  numeric,
+  jsonb,
+  boolean,
+  timestamp,
+  integer,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const products = pgTable("products", {
@@ -24,6 +33,21 @@ export const categories = pgTable("categories", {
   slug: text("slug").unique().notNull(),
 });
 
+export const coupons = pgTable("coupons", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  code: text("code").unique().notNull(),
+  type: text("type").$type<"percent" | "fixed">().notNull(),
+  value: integer("value").notNull(),
+  label: text("label").notNull(),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => sql`now()`),
+});
+
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type Category = typeof categories.$inferSelect;
+export type Coupon = typeof coupons.$inferSelect;
+export type NewCoupon = typeof coupons.$inferInsert;

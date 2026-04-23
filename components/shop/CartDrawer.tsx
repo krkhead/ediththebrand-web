@@ -73,15 +73,22 @@ export default function CartDrawer() {
     clearCoupon,
     discountAmount,
     finalTotal,
+    syncCoupons,
   } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
   const [couponMessage, setCouponMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
   useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    if (mounted && isOpen) {
+      void syncCoupons();
+    }
+  }, [isOpen, mounted, syncCoupons]);
 
   useEffect(() => {
     setCouponCode(appliedCoupon?.code ?? "");
@@ -93,12 +100,14 @@ export default function CartDrawer() {
   const discount = discountAmount();
   const total = finalTotal();
 
-  const handleApplyCoupon = () => {
-    const result = applyCoupon(couponCode);
+  const handleApplyCoupon = async () => {
+    setCouponLoading(true);
+    const result = await applyCoupon(couponCode);
     setCouponMessage({
       type: result.ok ? "success" : "error",
       text: result.message,
     });
+    setCouponLoading(false);
   };
 
   const handleClearCoupon = () => {
@@ -238,10 +247,11 @@ export default function CartDrawer() {
                 />
                 <button
                   type="button"
-                  onClick={handleApplyCoupon}
-                  className="bg-[#3D2E24] px-4 py-2 text-[10px] tracking-[0.2em] uppercase text-[#F8F4EE] transition-colors hover:bg-[#2A1F18]"
+                  onClick={() => void handleApplyCoupon()}
+                  disabled={couponLoading}
+                  className="bg-[#3D2E24] px-4 py-2 text-[10px] tracking-[0.2em] uppercase text-[#F8F4EE] transition-colors hover:bg-[#2A1F18] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Apply
+                  {couponLoading ? "Checking" : "Apply"}
                 </button>
               </div>
 

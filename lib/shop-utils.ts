@@ -1,6 +1,6 @@
 import type { Product } from "@/lib/db/schema";
 import {
-  COUPON_DEFINITIONS,
+  FALLBACK_COUPON_DEFINITIONS,
   PRODUCT_SPOTLIGHTS,
   type CouponDefinition,
 } from "@/lib/shop-config";
@@ -15,10 +15,17 @@ export function formatNaira(amount: number) {
   return `₦${amount.toLocaleString()}`;
 }
 
-export function resolveCoupon(code: string): CouponDefinition | null {
+export function normalizeCode(value: string) {
+  return value.trim().toUpperCase();
+}
+
+export function resolveCoupon(
+  code: string,
+  coupons: CouponDefinition[] = FALLBACK_COUPON_DEFINITIONS
+): CouponDefinition | null {
   const normalized = normalize(code);
   return (
-    COUPON_DEFINITIONS.find((coupon) => normalize(coupon.code) === normalized) ??
+    coupons.find((coupon) => normalize(coupon.code) === normalized) ??
     null
   );
 }

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
-import { LayoutDashboard, Package, PlusCircle, Home } from "lucide-react";
+import { LayoutDashboard, Package, PlusCircle, Home, TicketPercent } from "lucide-react";
 
 const ADMIN_EMAIL = "editholufestus@gmail.com";
 
@@ -27,6 +27,7 @@ export default async function AdminLayout({
     { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/admin/products", icon: Package, label: "Products" },
     { href: "/admin/products/new", icon: PlusCircle, label: "Add Product" },
+    { href: "/admin/coupons", icon: TicketPercent, label: "Coupons" },
   ];
 
   return (
