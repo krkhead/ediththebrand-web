@@ -8,12 +8,14 @@ interface ShopSearchFormProps {
   initialQuery?: string;
   placeholder?: string;
   className?: string;
+  basePath?: string;
 }
 
 export default function ShopSearchForm({
   initialQuery = "",
   placeholder = "Search for serums, toners, sunscreens...",
   className = "",
+  basePath = "/shop/all-products",
 }: ShopSearchFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -30,11 +32,11 @@ export default function ShopSearchForm({
 
     startTransition(() => {
       if (!trimmed) {
-        router.push("/shop");
+        router.push(basePath);
         return;
       }
 
-      router.push(`/shop?q=${encodeURIComponent(trimmed)}`);
+      router.push(`${basePath}?q=${encodeURIComponent(trimmed)}`);
     });
   };
 

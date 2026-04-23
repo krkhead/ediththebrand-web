@@ -7,6 +7,7 @@ import { requireAdmin, isValidUUID } from "@/lib/admin-guard";
 const ALLOWED_UPDATE_FIELDS = new Set([
   "name", "slug", "description", "price", "images",
   "category", "origin", "inStock", "featured",
+  "isNewArrival", "isBackInStock",
 ]);
 
 export async function GET(

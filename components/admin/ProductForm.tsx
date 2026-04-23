@@ -1,34 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Upload, X, Loader2 } from "lucide-react";
-import type { Product } from "@/lib/db/schema";
+import type { Category, Product } from "@/lib/db/schema";
+import { placeholderCollections } from "@/lib/storefront-data";
+import { slugify } from "@/lib/shop-utils";
 
 interface ProductFormProps {
   product?: Product;
   mode: "new" | "edit";
-}
-
-const CATEGORIES = [
-  "Serum",
-  "Toner",
-  "Moisturiser",
-  "Cleanser",
-  "SPF / Sunscreen",
-  "Eye Care",
-  "Body",
-  "Mask",
-  "Oil",
-  "Other",
-];
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export default function ProductForm({ product, mode }: ProductFormProps) {
@@ -36,6 +18,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState("");
+  const [availableCollections, setAvailableCollections] = useState<Category[]>(
+    placeholderCollections
+  );
 
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
@@ -43,9 +28,28 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   const [category, setCategory] = useState(product?.category ?? "");
   const [inStock, setInStock] = useState(product?.inStock ?? true);
   const [featured, setFeatured] = useState(product?.featured ?? false);
+  const [isNewArrival, setIsNewArrival] = useState(product?.isNewArrival ?? false);
+  const [isBackInStock, setIsBackInStock] = useState(product?.isBackInStock ?? false);
   const [images, setImages] = useState<string[]>(
     ((product?.images as string[]) ?? []).filter(Boolean)
   );
+
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (!response.ok) return;
+        const data = (await response.json()) as Category[];
+        if (data.length > 0) {
+          setAvailableCollections(data);
+        }
+      } catch {
+        // fallback to static list
+      }
+    };
+
+    void loadCollections();
+  }, []);
 
   const uploadToCloudinary = useCallback(async (file: File): Promise<string | null> => {
     const res = await fetch("/api/upload", { method: "POST" });
@@ -107,6 +111,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       category,
       inStock,
       featured,
+      isNewArrival,
+      isBackInStock,
     };
 
     try {
@@ -200,9 +206,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8A020] bg-white"
             >
               <option value="">Select category...</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {availableCollections.map((collection) => (
+                <option key={collection.id} value={collection.name}>
+                  {collection.name}
                 </option>
               ))}
             </select>
@@ -210,7 +216,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         </div>
 
         {/* Toggles */}
-        <div className="flex gap-8 pt-2">
+        <div className="flex flex-wrap gap-8 pt-2">
           <label className="flex items-center gap-3 cursor-pointer">
             <div
               onClick={() => setInStock(!inStock)}
@@ -241,6 +247,38 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               />
             </div>
             <span className="text-sm text-gray-600">Featured on Home</span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div
+              onClick={() => setIsNewArrival(!isNewArrival)}
+              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+                isNewArrival ? "bg-[#A14D2A]" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                  isNewArrival ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </div>
+            <span className="text-sm text-gray-600">Show “New Arrival” on Home</span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div
+              onClick={() => setIsBackInStock(!isBackInStock)}
+              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+                isBackInStock ? "bg-[#7A5C43]" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                  isBackInStock ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </div>
+            <span className="text-sm text-gray-600">Show “Back in Stock” on Home</span>
           </label>
         </div>
       </div>

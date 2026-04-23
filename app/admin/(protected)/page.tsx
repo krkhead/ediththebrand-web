@@ -1,14 +1,22 @@
 import { db } from "@/lib/db";
-import { coupons, products } from "@/lib/db/schema";
+import { categories, coupons, products } from "@/lib/db/schema";
 import { eq, count } from "drizzle-orm";
 import Link from "next/link";
-import { Package, Star, CheckCircle, PlusCircle, TicketPercent } from "lucide-react";
+import {
+  Package,
+  Star,
+  CheckCircle,
+  PlusCircle,
+  TicketPercent,
+  Layers3,
+} from "lucide-react";
 
 export default async function AdminDashboard() {
   let total = 0;
   let inStock = 0;
   let featured = 0;
   let activeCoupons = 0;
+  let totalCollections = 0;
 
   try {
     const [totalResult] = await db.select({ count: count() }).from(products);
@@ -24,11 +32,15 @@ export default async function AdminDashboard() {
       .select({ count: count() })
       .from(coupons)
       .where(eq(coupons.active, true));
+    const [collectionResult] = await db
+      .select({ count: count() })
+      .from(categories);
 
     total = totalResult.count;
     inStock = inStockResult.count;
     featured = featuredResult.count;
     activeCoupons = couponResult.count;
+    totalCollections = collectionResult.count;
   } catch {
     // DB not yet connected
   }
@@ -37,6 +49,7 @@ export default async function AdminDashboard() {
     { label: "Total Products", value: total, icon: Package, color: "text-[#3D2E24]" },
     { label: "In Stock", value: inStock, icon: CheckCircle, color: "text-[#2C7A2C]" },
     { label: "Featured", value: featured, icon: Star, color: "text-[#E8A020]" },
+    { label: "Collections", value: totalCollections, icon: Layers3, color: "text-[#7A5C43]" },
     { label: "Active Coupons", value: activeCoupons, icon: TicketPercent, color: "text-[#A14D2A]" },
   ];
 
@@ -98,6 +111,13 @@ export default async function AdminDashboard() {
             Manage Products
           </Link>
           <Link
+            href="/admin/collections"
+            className="flex items-center gap-2 border border-[#7A5C43] text-[#7A5C43] px-6 py-3 text-sm hover:bg-[#7A5C43] hover:text-white transition-colors"
+          >
+            <Layers3 size={18} />
+            Manage Collections
+          </Link>
+          <Link
             href="/admin/coupons"
             className="flex items-center gap-2 border border-[#E8A020] text-[#A14D2A] px-6 py-3 text-sm hover:bg-[#E8A020]/10 transition-colors"
           >
@@ -114,19 +134,6 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Setup checklist when DB is empty */}
-      {total === 0 && (
-        <div className="bg-amber-50 border border-amber-200 p-6">
-          <h3 className="font-medium text-amber-800 mb-3">Getting Started</h3>
-          <ul className="space-y-2 text-sm text-amber-700">
-            <li>✓ Website is live and running</li>
-            <li>○ Add your Neon database URL to environment variables</li>
-            <li>○ Add your Cloudinary credentials to environment variables</li>
-            <li>○ Run <code className="bg-amber-100 px-1">npm run db:push</code> to create the database tables</li>
-            <li>○ Add your first product using the &quot;Add New Product&quot; button above</li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

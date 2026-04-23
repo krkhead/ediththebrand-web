@@ -26,6 +26,9 @@ export default function Navbar() {
     { href: "/about", label: "About" },
   ];
 
+  const navTextColor = scrolled ? "text-[#3D2E24]" : "text-[#F8F4EE]";
+  const navHoverColor = scrolled ? "hover:text-[#E8A020]" : "hover:text-[#E8A020]";
+
   return (
     <>
       <nav
@@ -46,7 +49,7 @@ export default function Navbar() {
               className="rounded-full"
             />
             <span
-              className="font-display text-xl text-[#3D2E24] tracking-wide hidden sm:block"
+              className={`hidden text-xl tracking-wide sm:block ${navTextColor}`}
               style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
             >
               Ediththebrand
@@ -59,7 +62,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[#3D2E24] gold-underline tracking-wide hover:text-[#E8A020] transition-colors"
+                className={`gold-underline text-sm font-medium tracking-wide transition-colors ${navTextColor} ${navHoverColor}`}
               >
                 {link.label}
               </Link>
@@ -70,7 +73,7 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <button
               onClick={openCart}
-              className="relative p-2 text-[#3D2E24] hover:text-[#E8A020] transition-colors"
+              className={`relative p-2 transition-colors ${navTextColor} ${navHoverColor}`}
               aria-label="Open cart"
             >
               <ShoppingBag size={22} />
@@ -82,7 +85,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setMenuOpen(true)}
-              className="md:hidden p-2 text-[#3D2E24]"
+              className={`p-2 md:hidden ${navTextColor}`}
               aria-label="Open menu"
             >
               <Menu size={22} />

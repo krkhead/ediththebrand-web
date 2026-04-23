@@ -71,6 +71,9 @@ export default async function AdminProductsPage() {
                 <th className="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide">
                   Featured
                 </th>
+                <th className="text-left px-4 py-3 text-xs text-gray-500 uppercase tracking-wide">
+                  Home Labels
+                </th>
                 <th className="px-4 py-3 text-xs text-gray-500 uppercase tracking-wide">
                   Actions
                 </th>
@@ -134,6 +137,23 @@ export default async function AdminProductsPage() {
                         field="featured"
                         value={product.featured ?? false}
                       />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        {product.isNewArrival && (
+                          <span className="bg-[#A14D2A]/10 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-[#A14D2A]">
+                            New Arrival
+                          </span>
+                        )}
+                        {product.isBackInStock && (
+                          <span className="bg-[#7A5C43]/10 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-[#7A5C43]">
+                            Back in Stock
+                          </span>
+                        )}
+                        {!product.isNewArrival && !product.isBackInStock && (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2 justify-center">

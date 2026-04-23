@@ -4,11 +4,11 @@ export const PAYMENT_DETAILS = {
   accountName: "Ediththebrand",
 };
 
-export const PAYMENT_DETAILS_LINE = `${PAYMENT_DETAILS.bank} · ${PAYMENT_DETAILS.accountNumber} · ${PAYMENT_DETAILS.accountName}`;
+export const PAYMENT_DETAILS_LINE = `${PAYMENT_DETAILS.bank} - ${PAYMENT_DETAILS.accountNumber} - ${PAYMENT_DETAILS.accountName}`;
 
 export const DELIVERY_POLICY_LINES = [
-  "Within Lagos: 2–3 working days",
-  "Interstate: 4–7 working days",
+  "Within Lagos: 2-3 working days",
+  "Interstate: 4-7 working days",
   "Please note, extreme locations in either category may take longer.",
 ];
 
@@ -30,15 +30,6 @@ export const FALLBACK_COUPON_DEFINITIONS: CouponDefinition[] = [
     code: "GLOW1500",
     type: "fixed",
     value: 1500,
-    label: "₦1,500 off your order",
+    label: "NGN 1,500 off your order",
   },
 ];
-
-export const PRODUCT_SPOTLIGHTS = {
-  newArrivals: [
-    "seoul-1988-serum",
-    "numbuzin-glow-set",
-    "dr-althea-relief-cream",
-  ],
-  backInStock: ["centella-toning-set", "eos-body-lotion-set"],
-};
