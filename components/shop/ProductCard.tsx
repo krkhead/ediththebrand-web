@@ -7,9 +7,10 @@ import type { Product } from "@/lib/db/schema";
 
 interface ProductCardProps {
   product: Product;
+  badges?: string[];
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, badges = [] }: ProductCardProps) {
   const { addItem } = useCartStore();
   const images = product.images as string[];
   const image = images?.[0] || null;
@@ -38,6 +39,18 @@ export default function ProductCard({ product }: ProductCardProps) {
           >
             {product.origin}
           </span>
+        )}
+        {badges.length > 0 && (
+          <div className="absolute right-3 top-3 flex max-w-[60%] flex-col items-end gap-2">
+            {badges.map((badge) => (
+              <span
+                key={badge}
+                className="bg-[#F8F4EE]/92 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-[#3D2E24] shadow-sm backdrop-blur-sm"
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
         )}
         {!product.inStock && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">

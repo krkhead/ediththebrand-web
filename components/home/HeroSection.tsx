@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import ShopSearchForm from "@/components/shop/ShopSearchForm";
 
 export default function HeroSection() {
   return (
@@ -21,7 +22,7 @@ export default function HeroSection() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-16 grid md:grid-cols-2 gap-12 items-center w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16 grid md:grid-cols-2 gap-12 items-center w-full">
         <div className="space-y-6">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -83,6 +84,17 @@ export default function HeroSection() {
             >
               Book Consultation
             </Link>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.6 }}
+            className="max-w-xl pt-2"
+          >
+            <ShopSearchForm
+              placeholder="Search by product name, category or origin"
+            />
           </motion.div>
         </div>
 

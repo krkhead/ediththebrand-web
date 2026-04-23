@@ -79,3 +79,16 @@ body {
   background: rgba(61, 46, 36, 0.5);
   backdrop-filter: blur(2px);
 }
+
+.delivery-marquee {
+  animation: delivery-marquee 28s linear infinite;
+}
+
+@keyframes delivery-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

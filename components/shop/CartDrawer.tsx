@@ -1,5 +1,7 @@
 "use client";
 
+import { PAYMENT_DETAILS_LINE, type CouponDefinition } from "@/lib/shop-config";
+import { formatNaira } from "@/lib/shop-utils";
 import { useCartStore, type CartItem } from "@/store/cart";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import Image from "next/image";
@@ -7,29 +9,43 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const WHATSAPP_NUMBER = "2349049695621";
-const ACCOUNT_DETAILS = "Moniepoint MFB · 9049695621 · Ediththebrand";
 
-function buildWhatsAppLink(items: CartItem[], total: number): string {
+function buildWhatsAppLink(
+  items: CartItem[],
+  subtotal: number,
+  discount: number,
+  finalTotal: number,
+  appliedCoupon: CouponDefinition | null
+): string {
   const lines = items
     .map((item) => {
       const unitPrice = item.price
-        ? `₦${parseFloat(item.price).toLocaleString()}`
+        ? formatNaira(parseFloat(item.price))
         : "price TBC";
       const lineTotal =
         item.price && item.quantity > 1
-          ? ` (₦${(parseFloat(item.price) * item.quantity).toLocaleString()} total)`
+          ? ` (${formatNaira(parseFloat(item.price) * item.quantity)} total)`
           : "";
+
       return `• ${item.name} × ${item.quantity} — ${unitPrice}${lineTotal}`;
     })
     .join("\n");
 
-  const totalLine =
-    total > 0 ? `\n\n*Order Total: ₦${total.toLocaleString()}*` : "";
+  const pricingLines = [
+    subtotal > 0 ? `*Subtotal:* ${formatNaira(subtotal)}` : "*Subtotal:* Price on request",
+    appliedCoupon && discount > 0
+      ? `*Coupon:* ${appliedCoupon.code} (-${formatNaira(discount)})`
+      : null,
+    finalTotal > 0 ? `*Order Total:* ${formatNaira(finalTotal)}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const message =
-    `Hi Edith! I'd like to place an order from ETBstore 🛍️\n\n` +
-    `*My Order:*\n${lines}${totalLine}\n\n` +
-    `*Payment:* ${ACCOUNT_DETAILS}\n\n` +
+    `Hi Edith! I'd like to place an order from ETBstore.\n\n` +
+    `*My Order:*\n${lines}\n\n` +
+    `${pricingLines}\n\n` +
+    `*Payment Details:* ${PAYMENT_DETAILS_LINE}\n\n` +
     `Please confirm availability. Thank you!`;
 
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -45,27 +61,58 @@ function WhatsAppIcon() {
 }
 
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, updateQuantity, removeItem, totalPrice } =
-    useCartStore();
+  const {
+    items,
+    isOpen,
+    closeCart,
+    updateQuantity,
+    removeItem,
+    totalPrice,
+    appliedCoupon,
+    applyCoupon,
+    clearCoupon,
+    discountAmount,
+    finalTotal,
+  } = useCartStore();
   const [mounted, setMounted] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponMessage, setCouponMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
+  useEffect(() => {
+    setCouponCode(appliedCoupon?.code ?? "");
+  }, [appliedCoupon]);
 
-  if (!isOpen) return null;
+  if (!mounted || !isOpen) return null;
+
+  const subtotal = totalPrice();
+  const discount = discountAmount();
+  const total = finalTotal();
+
+  const handleApplyCoupon = () => {
+    const result = applyCoupon(couponCode);
+    setCouponMessage({
+      type: result.ok ? "success" : "error",
+      text: result.message,
+    });
+  };
+
+  const handleClearCoupon = () => {
+    clearCoupon();
+    setCouponCode("");
+    setCouponMessage(null);
+  };
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[70] cart-backdrop"
-        onClick={closeCart}
-      />
+      <div className="fixed inset-0 z-[70] cart-backdrop" onClick={closeCart} />
 
-      {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md z-[80] bg-[#F8F4EE] flex flex-col shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0D8CE]">
+      <div className="fixed right-0 top-0 z-[80] flex h-full w-full max-w-md flex-col bg-[#F8F4EE] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#E0D8CE] px-6 py-5">
           <div className="flex items-center gap-2">
             <ShoppingBag size={20} className="text-[#3D2E24]" />
             <h2
@@ -77,22 +124,21 @@ export default function CartDrawer() {
           </div>
           <button
             onClick={closeCart}
-            className="p-1 text-[#8A7D72] hover:text-[#3D2E24] transition-colors"
+            className="p-1 text-[#8A7D72] transition-colors hover:text-[#3D2E24]"
           >
             <X size={22} />
           </button>
         </div>
 
-        {/* Items */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+        <div className="flex-1 space-y-5 overflow-y-auto px-6 py-4">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
               <ShoppingBag size={48} className="text-[#8A7D72]" />
               <p className="text-[#8A7D72]">Your cart is empty.</p>
               <Link
                 href="/shop"
                 onClick={closeCart}
-                className="text-sm text-[#E8A020] border border-[#E8A020] px-5 py-2 hover:bg-[#E8A020] hover:text-white transition-colors"
+                className="border border-[#E8A020] px-5 py-2 text-sm text-[#E8A020] transition-colors hover:bg-[#E8A020] hover:text-white"
               >
                 Start Shopping
               </Link>
@@ -100,8 +146,7 @@ export default function CartDrawer() {
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex gap-4">
-                {/* Image */}
-                <div className="w-20 h-20 relative flex-shrink-0 bg-[#F0EAE0]">
+                <div className="relative h-20 w-20 flex-shrink-0 bg-[#F0EAE0]">
                   {item.image ? (
                     <Image
                       src={item.image}
@@ -110,48 +155,42 @@ export default function CartDrawer() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="flex h-full w-full items-center justify-center">
                       <ShoppingBag size={24} className="text-[#8A7D72]" />
                     </div>
                   )}
                 </div>
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#3D2E24] truncate">
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-[#3D2E24]">
                     {item.name}
                   </p>
-                  <p className="text-sm text-[#E8A020] mt-0.5">
+                  <p className="mt-0.5 text-sm text-[#E8A020]">
                     {item.price
-                      ? `₦${parseFloat(item.price).toLocaleString()}`
+                      ? formatNaira(parseFloat(item.price))
                       : "Price on request"}
                   </p>
-                  {/* Quantity */}
-                  <div className="flex items-center gap-2 mt-2">
+
+                  <div className="mt-2 flex items-center gap-2">
                     <button
-                      onClick={() =>
-                        updateQuantity(item.id, item.quantity - 1)
-                      }
-                      className="w-7 h-7 border border-[#8A7D72] flex items-center justify-center hover:border-[#3D2E24] transition-colors"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="flex h-7 w-7 items-center justify-center border border-[#8A7D72] transition-colors hover:border-[#3D2E24]"
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="text-sm w-6 text-center">
-                      {item.quantity}
-                    </span>
+                    <span className="w-6 text-center text-sm">{item.quantity}</span>
                     <button
-                      onClick={() =>
-                        updateQuantity(item.id, item.quantity + 1)
-                      }
-                      className="w-7 h-7 border border-[#8A7D72] flex items-center justify-center hover:border-[#3D2E24] transition-colors"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="flex h-7 w-7 items-center justify-center border border-[#8A7D72] transition-colors hover:border-[#3D2E24]"
                     >
                       <Plus size={12} />
                     </button>
                   </div>
                 </div>
-                {/* Remove */}
+
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="text-[#8A7D72] hover:text-red-500 transition-colors self-start"
+                  className="self-start text-[#8A7D72] transition-colors hover:text-red-500"
                 >
                   <X size={16} />
                 </button>
@@ -160,44 +199,95 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
-          <div className="px-6 py-5 border-t border-[#E0D8CE] space-y-4">
+          <div className="space-y-4 border-t border-[#E0D8CE] px-6 py-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#8A7D72]">Subtotal</span>
               <span className="text-lg font-medium text-[#3D2E24]">
-                {totalPrice() > 0
-                  ? `₦${totalPrice().toLocaleString()}`
-                  : "Price on request"}
+                {subtotal > 0 ? formatNaira(subtotal) : "Price on request"}
               </span>
             </div>
 
-            {/* Payment info */}
-            <div className="bg-[#F0EAE0] px-4 py-3 space-y-1">
-              <p className="text-[10px] text-[#8A7D72] tracking-widest uppercase">
-                Bank Transfer
-              </p>
-              <p className="text-sm text-[#3D2E24] font-medium">
-                Moniepoint MFB · 9049695621
-              </p>
-              <p className="text-xs text-[#8A7D72]">Ediththebrand</p>
+            <div className="space-y-3 border border-[#E0D8CE] bg-white px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] tracking-widest uppercase text-[#8A7D72]">
+                    Coupon Code
+                  </p>
+                  <p className="text-xs text-[#8A7D72]">
+                    Discounts apply to priced items in cart.
+                  </p>
+                </div>
+                {appliedCoupon && (
+                  <button
+                    type="button"
+                    onClick={handleClearCoupon}
+                    className="text-[10px] tracking-[0.2em] uppercase text-[#8A7D72] transition-colors hover:text-[#3D2E24]"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  value={couponCode}
+                  onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+                  placeholder="Enter coupon"
+                  className="min-w-0 flex-1 border border-[#E0D8CE] px-3 py-2 text-sm outline-none transition-colors focus:border-[#E8A020]"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  className="bg-[#3D2E24] px-4 py-2 text-[10px] tracking-[0.2em] uppercase text-[#F8F4EE] transition-colors hover:bg-[#2A1F18]"
+                >
+                  Apply
+                </button>
+              </div>
+
+              {couponMessage && (
+                <p
+                  className={`text-xs ${
+                    couponMessage.type === "success"
+                      ? "text-[#2C7A2C]"
+                      : "text-red-600"
+                  }`}
+                >
+                  {couponMessage.text}
+                </p>
+              )}
+
+              {appliedCoupon && discount > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#8A7D72]">
+                    {appliedCoupon.code} discount
+                  </span>
+                  <span className="text-[#2C7A2C]">-{formatNaira(discount)}</span>
+                </div>
+              )}
             </div>
 
-            {/* WhatsApp CTA */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[#8A7D72]">Final total</span>
+              <span className="text-lg font-medium text-[#3D2E24]">
+                {total > 0 ? formatNaira(total) : "Price on request"}
+              </span>
+            </div>
+
             <a
-              href={buildWhatsAppLink(items, totalPrice())}
+              href={buildWhatsAppLink(items, subtotal, discount, total, appliedCoupon)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 text-sm tracking-widest hover:bg-[#1ebe5a] transition-colors"
+              className="flex w-full items-center justify-center gap-2 bg-[#25D366] py-3 text-sm tracking-widest text-white transition-colors hover:bg-[#1ebe5a]"
             >
               <WhatsAppIcon />
               ORDER VIA WHATSAPP
             </a>
 
-            <p className="text-xs text-[#8A7D72] text-center leading-relaxed">
-              Tap above to send your order to Edith on WhatsApp.
+            <p className="text-center text-xs leading-relaxed text-[#8A7D72]">
+              Tap above to send your order summary on WhatsApp.
               <br />
-              She&apos;ll confirm availability &amp; payment details.
+              Payment details will appear in the chat with your order.
             </p>
           </div>
         )}

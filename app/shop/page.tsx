@@ -1,8 +1,17 @@
 import { db } from "@/lib/db";
-import { products, categories, type Product, type Category } from "@/lib/db/schema";
+import { categories, products, type Category, type Product } from "@/lib/db/schema";
+import {
+  buildShopHref,
+  getProductBadges,
+  getProductSpotlights,
+  matchesProductQuery,
+  type ProductSpotlightKey,
+} from "@/lib/shop-utils";
 import ProductCard from "@/components/shop/ProductCard";
+import ShopSearchForm from "@/components/shop/ShopSearchForm";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -10,7 +19,6 @@ export const metadata: Metadata = {
     "Authentic skincare from the US, GB, KR, and JP. Serums, toners, moisturisers and more.",
 };
 
-// Static placeholder products shown until admin populates DB
 const placeholderProducts: Product[] = [
   {
     id: "p1",
@@ -23,8 +31,8 @@ const placeholderProducts: Product[] = [
     category: "Serum",
     inStock: true,
     featured: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2026-04-10"),
+    updatedAt: new Date("2026-04-10"),
   },
   {
     id: "p2",
@@ -37,8 +45,8 @@ const placeholderProducts: Product[] = [
     category: "Toner",
     inStock: true,
     featured: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2026-03-28"),
+    updatedAt: new Date("2026-04-18"),
   },
   {
     id: "p3",
@@ -51,8 +59,8 @@ const placeholderProducts: Product[] = [
     category: "Moisturiser",
     inStock: true,
     featured: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2026-04-14"),
+    updatedAt: new Date("2026-04-14"),
   },
   {
     id: "p4",
@@ -65,8 +73,8 @@ const placeholderProducts: Product[] = [
     category: "Body",
     inStock: true,
     featured: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2026-03-22"),
+    updatedAt: new Date("2026-04-17"),
   },
   {
     id: "p5",
@@ -79,17 +87,29 @@ const placeholderProducts: Product[] = [
     category: "Toner",
     inStock: true,
     featured: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2026-04-16"),
+    updatedAt: new Date("2026-04-16"),
   },
+];
+
+const spotlightOptions: Array<{
+  key: ProductSpotlightKey;
+  label: string;
+}> = [
+  { key: "new-arrivals", label: "New Arrivals" },
+  { key: "back-in-stock", label: "Back in Stock" },
 ];
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    q?: string;
+    spotlight?: ProductSpotlightKey;
+  }>;
 }) {
-  const { category } = await searchParams;
+  const { category, q = "", spotlight } = await searchParams;
   let dbProducts: Product[] = [];
   let dbCategories: Category[] = [];
 
@@ -100,23 +120,36 @@ export default async function ShopPage({
     // DB not yet configured
   }
 
-  const displayProducts =
-    dbProducts.length > 0 ? dbProducts : placeholderProducts;
-  const filtered = category
-    ? displayProducts.filter(
-        (p) => p.category?.toLowerCase() === category.toLowerCase()
-      )
-    : displayProducts;
+  const displayProducts = dbProducts.length > 0 ? dbProducts : placeholderProducts;
+  const spotlightMap = getProductSpotlights(displayProducts);
+
+  const filteredProducts = displayProducts.filter((product) => {
+    const matchesCategory = category
+      ? product.category?.toLowerCase() === category.toLowerCase()
+      : true;
+    const matchesSpotlight = spotlight
+      ? spotlightMap[spotlight].some((item) => item.slug === product.slug)
+      : true;
+
+    return matchesCategory && matchesSpotlight && matchesProductQuery(product, q);
+  });
 
   const allCategories =
     dbCategories.length > 0
-      ? dbCategories.map((c) => c.name)
-      : [...new Set(placeholderProducts.map((p) => p.category))];
+      ? dbCategories.map((item) => item.name)
+      : [
+          ...new Set(
+            placeholderProducts
+              .map((product) => product.category)
+              .filter((item): item is string => Boolean(item))
+          ),
+        ];
+
+  const activeFilterCount = [category, spotlight, q.trim()].filter(Boolean).length;
 
   return (
     <>
-      {/* Hero */}
-      <div className="relative bg-[#3D2E24] pt-32 pb-16 px-6 overflow-hidden">
+      <div className="relative overflow-hidden bg-[#3D2E24] px-6 pb-16 pt-36">
         <div className="absolute inset-0 opacity-10">
           <Image
             src="/brand/IMG_3841.JPG.jpeg"
@@ -125,59 +158,130 @@ export default async function ShopPage({
             className="object-cover"
           />
         </div>
-        <div className="relative max-w-7xl mx-auto">
-          <p className="text-[#E8A020] text-sm tracking-[0.3em] uppercase mb-3">
+        <div className="relative mx-auto max-w-7xl">
+          <p className="mb-3 text-sm uppercase tracking-[0.3em] text-[#E8A020]">
             Ediththebrand
           </p>
           <h1
-            className="text-7xl md:text-9xl text-[#F8F4EE] leading-none"
+            className="text-7xl leading-none text-[#F8F4EE] md:text-9xl"
             style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
           >
             Shop
           </h1>
-          <p className="text-[#8A7D72] mt-4 text-base">
-            Authentic skincare from the US, UK, Korea and Japan
+          <p className="mt-4 max-w-2xl text-base text-[#8A7D72]">
+            Browse by category, spotlight what just landed, and search straight to
+            what your skin needs.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Category filters */}
-        <div className="flex gap-2 flex-wrap mb-10">
-          <a
-            href="/shop"
-            className={`text-sm px-5 py-2 border transition-colors ${
-              !category
-                ? "bg-[#3D2E24] text-[#F8F4EE] border-[#3D2E24]"
+      <div className="mx-auto max-w-7xl px-6 py-12">
+        <div className="mb-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <ShopSearchForm
+            initialQuery={q}
+            className="w-full"
+            placeholder="Search by product name, category or origin"
+          />
+
+          <div className="border border-[#E0D8CE] bg-white px-5 py-4">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#8A7D72]">
+              Filter Summary
+            </p>
+            <div className="mt-2 flex items-end justify-between gap-4">
+              <div>
+                <p
+                  className="text-3xl text-[#3D2E24]"
+                  style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
+                >
+                  {filteredProducts.length}
+                </p>
+                <p className="text-sm text-[#8A7D72]">
+                  product{filteredProducts.length === 1 ? "" : "s"} showing
+                </p>
+              </div>
+              <p className="text-right text-xs text-[#8A7D72]">
+                {activeFilterCount > 0
+                  ? `${activeFilterCount} active filter${activeFilterCount === 1 ? "" : "s"}`
+                  : "No filters applied"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Link
+            href={buildShopHref({ query: q || undefined })}
+            className={`border px-5 py-2 text-sm transition-colors ${
+              !spotlight
+                ? "border-[#3D2E24] bg-[#3D2E24] text-[#F8F4EE]"
                 : "border-[#8A7D72] text-[#8A7D72] hover:border-[#3D2E24] hover:text-[#3D2E24]"
             }`}
           >
-            All
-          </a>
-          {allCategories.map((cat) => (
-            <a
-              key={cat}
-              href={`/shop?category=${cat}`}
-              className={`text-sm px-5 py-2 border transition-colors ${
-                category === cat
-                  ? "bg-[#3D2E24] text-[#F8F4EE] border-[#3D2E24]"
-                  : "border-[#8A7D72] text-[#8A7D72] hover:border-[#3D2E24] hover:text-[#3D2E24]"
+            All Product Stories
+          </Link>
+          {spotlightOptions.map((option) => (
+            <Link
+              key={option.key}
+              href={buildShopHref({
+                query: q || undefined,
+                category,
+                spotlight: option.key,
+              })}
+              className={`border px-5 py-2 text-sm transition-colors ${
+                spotlight === option.key
+                  ? "border-[#E8A020] bg-[#E8A020] text-[#3D2E24]"
+                  : "border-[#E8A020]/40 text-[#3D2E24] hover:border-[#E8A020] hover:bg-[#E8A020]/10"
               }`}
             >
-              {cat}
-            </a>
+              {option.label}
+            </Link>
           ))}
         </div>
 
-        {/* Grid */}
-        {filtered.length === 0 ? (
-          <div className="text-center py-24">
-            <p className="text-[#8A7D72]">No products found in this category.</p>
+        <div className="mb-10 flex flex-wrap gap-2">
+          <Link
+            href={buildShopHref({ query: q || undefined, spotlight })}
+            className={`border px-5 py-2 text-sm transition-colors ${
+              !category
+                ? "border-[#3D2E24] bg-[#3D2E24] text-[#F8F4EE]"
+                : "border-[#8A7D72] text-[#8A7D72] hover:border-[#3D2E24] hover:text-[#3D2E24]"
+            }`}
+          >
+            All Categories
+          </Link>
+          {allCategories.map((item) => (
+            <Link
+              key={item}
+              href={buildShopHref({
+                category: item,
+                query: q || undefined,
+                spotlight,
+              })}
+              className={`border px-5 py-2 text-sm transition-colors ${
+                category === item
+                  ? "border-[#3D2E24] bg-[#3D2E24] text-[#F8F4EE]"
+                  : "border-[#8A7D72] text-[#8A7D72] hover:border-[#3D2E24] hover:text-[#3D2E24]"
+              }`}
+            >
+              {item}
+            </Link>
+          ))}
+        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="py-24 text-center">
+            <p className="text-[#8A7D72]">
+              No products matched this search yet. Try another category or keyword.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 md:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                badges={getProductBadges(product, spotlightMap)}
+              />
             ))}
           </div>
         )}
