@@ -2,7 +2,7 @@
 
 import type { Product } from "@/lib/db/schema";
 import { formatNaira } from "@/lib/shop-utils";
-import { useCartStore } from "@/store/cart";
+import AddToCartControls from "@/components/shop/AddToCartControls";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,7 +20,6 @@ export default function ProductCard({
   badges = [],
   showDescription = false,
 }: ProductCardProps) {
-  const { addItem } = useCartStore();
   const image = (product.images as string[])?.[0] || null;
   const price = product.price ? String(product.price) : null;
 
@@ -89,25 +88,22 @@ export default function ProductCard({
         {showDescription && product.description && (
           <p className="text-sm text-[#8A7D72]">{product.description}</p>
         )}
-        <div className="flex items-center justify-between pt-2">
+        <div className="space-y-3 pt-2">
           <span className="text-sm font-medium text-[#E8A020]">
             {price ? formatNaira(parseFloat(price)) : "DM for price"}
           </span>
-          <button
-            disabled={!product.inStock}
-            onClick={() =>
-              addItem({
-                id: product.id,
-                name: product.name,
-                price,
-                image,
-                slug: product.slug,
-              })
-            }
-            className="border border-[#3D2E24] px-4 py-1.5 text-xs text-[#3D2E24] transition-all hover:bg-[#3D2E24] hover:text-[#F8F4EE] disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            Add to Cart
-          </button>
+          <AddToCartControls
+            compact
+            product={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price,
+              image,
+              inStock: product.inStock ?? true,
+            }}
+            buttonClassName="border border-[#3D2E24] px-4 py-2 text-xs text-[#3D2E24] transition-all hover:bg-[#3D2E24] hover:text-[#F8F4EE] disabled:cursor-not-allowed disabled:opacity-30"
+          />
         </div>
       </div>
     </div>

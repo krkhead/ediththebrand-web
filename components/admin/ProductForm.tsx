@@ -53,6 +53,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
   const uploadToCloudinary = useCallback(async (file: File): Promise<string | null> => {
     const res = await fetch("/api/upload", { method: "POST" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to prepare image upload");
+    }
     const { timestamp, signature, apiKey, cloudName, folder } = await res.json();
 
     const form = new FormData();
@@ -66,8 +70,15 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       { method: "POST", body: form }
     );
+    if (!upload.ok) {
+      const data = await upload.json().catch(() => ({}));
+      throw new Error(data.error?.message || data.error || "Image upload failed");
+    }
     const data = await upload.json();
-    return data.secure_url ?? null;
+    if (!data.secure_url) {
+      throw new Error(data.error?.message || "Image upload failed");
+    }
+    return data.secure_url;
   }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,11 +90,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       const urls = await Promise.all(files.map(uploadToCloudinary));
       const valid = urls.filter((url): url is string => Boolean(url));
       if (valid.length < files.length) {
-        setError("One or more images failed to upload. The rest were saved.");
+        setError("Some images could not be uploaded. The valid ones were saved.");
       }
       setImages((prev) => [...prev, ...valid]);
     } catch (err) {
-      setError("Image upload failed. Check your Cloudinary credentials.");
+      setError(err instanceof Error ? err.message : "Image upload failed.");
       console.error(err);
     } finally {
       setUploadingImages(false);

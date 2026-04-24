@@ -6,18 +6,19 @@ import PhotoStrip from "@/components/home/PhotoStrip";
 import type { Product } from "@/lib/db/schema";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { placeholderProducts } from "@/lib/storefront-data";
+import { selectDailyFeaturedProducts } from "@/lib/shop-utils";
 
 export default async function Home() {
-  let featuredProducts: Product[] = [];
+  let featuredProducts: Product[] = placeholderProducts;
   try {
-    featuredProducts = await db
-      .select()
-      .from(products)
-      .where(eq(products.featured, true))
-      .limit(3);
+    const allProducts = await db.select().from(products);
+    featuredProducts =
+      allProducts.length > 0
+        ? selectDailyFeaturedProducts(allProducts)
+        : placeholderProducts;
   } catch {
-    // DB not yet connected — use static showcase products
+    featuredProducts = selectDailyFeaturedProducts(placeholderProducts);
   }
 
   return (

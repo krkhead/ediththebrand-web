@@ -4,17 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useCartStore } from "@/store/cart";
 import type { Product } from "@/lib/db/schema";
 import { placeholderProducts } from "@/lib/storefront-data";
 import { formatNaira, getProductStatusBadges } from "@/lib/shop-utils";
+import AddToCartControls from "@/components/shop/AddToCartControls";
 
 interface FeaturedProductsProps {
   products?: Product[];
 }
 
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
-  const { addItem } = useCartStore();
   const displayProducts =
     products && products.length > 0 ? products : placeholderProducts;
 
@@ -108,21 +107,20 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                     <span className="text-sm text-[#E8A020]">
                       {price ? formatNaira(parseFloat(price)) : "DM for price"}
                     </span>
-                    <button
-                      onClick={() =>
-                        addItem({
-                          id: product.id,
-                          name: product.name,
-                          price,
-                          image,
-                          slug: product.slug,
-                        })
-                      }
-                      className="border border-[#F8F4EE]/30 px-4 py-1.5 text-xs text-[#F8F4EE] transition-all hover:border-[#E8A020] hover:bg-[#E8A020] hover:text-[#3D2E24]"
-                    >
-                      Add to Cart
-                    </button>
                   </div>
+                  <AddToCartControls
+                    compact
+                    tone="light"
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      slug: product.slug,
+                      price,
+                      image,
+                      inStock: product.inStock ?? true,
+                    }}
+                    buttonClassName="border border-[#F8F4EE]/30 px-4 py-2 text-xs text-[#F8F4EE] transition-all hover:border-[#E8A020] hover:bg-[#E8A020] hover:text-[#3D2E24] disabled:cursor-not-allowed disabled:opacity-30"
+                  />
                 </div>
               </motion.div>
             );

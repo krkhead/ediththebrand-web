@@ -20,7 +20,7 @@ interface CartStore {
   isOpen: boolean;
   appliedCoupon: CouponDefinition | null;
   availableCoupons: CouponDefinition[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -43,16 +43,17 @@ export const useCartStore = create<CartStore>()(
       appliedCoupon: null,
       availableCoupons: FALLBACK_COUPON_DEFINITIONS,
 
-      addItem: (item) => {
+      addItem: (item, quantity = 1) => {
+        const nextQuantity = Math.max(1, quantity);
         const existing = get().items.find((i) => i.id === item.id);
         if (existing) {
           set({
             items: get().items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              i.id === item.id ? { ...i, quantity: i.quantity + nextQuantity } : i
             ),
           });
         } else {
-          set({ items: [...get().items, { ...item, quantity: 1 }] });
+          set({ items: [...get().items, { ...item, quantity: nextQuantity }] });
         }
         set({ isOpen: true });
       },
@@ -146,7 +147,6 @@ export const useCartStore = create<CartStore>()(
       name: "etb-cart",
       partialize: (state) => ({
         items: state.items,
-        isOpen: state.isOpen,
         appliedCoupon: state.appliedCoupon,
       }),
     }

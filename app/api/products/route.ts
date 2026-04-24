@@ -56,6 +56,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
     console.error("POST /api/products error:", error);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    const message =
+      error instanceof Error && /does not exist|column|relation/i.test(error.message)
+        ? "Database schema needs updating. Run npm run db:push once, then try again."
+        : "Failed to create product";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

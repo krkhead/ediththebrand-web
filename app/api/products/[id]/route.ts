@@ -80,7 +80,11 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PATCH /api/products/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    const message =
+      error instanceof Error && /does not exist|column|relation/i.test(error.message)
+        ? "Database schema needs updating. Run npm run db:push once, then try again."
+        : "Failed to update product";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

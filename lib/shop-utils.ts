@@ -10,6 +10,14 @@ export type ProductSort =
   | "price-asc"
   | "price-desc";
 
+function stableHash(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
 function normalize(value: string) {
   return value.trim().toLowerCase();
 }
@@ -142,4 +150,25 @@ export function getAllCategoriesForFilter(products: Product[], collections: Cate
 
 export function isAllProductsCollection(slug: string) {
   return slug === ALL_PRODUCTS_COLLECTION_SLUG;
+}
+
+export function selectDailyFeaturedProducts(
+  products: Product[],
+  date = new Date(),
+  limit = 3
+) {
+  const dateKey = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+
+  return [...products]
+    .sort((left, right) => {
+      const leftHash = stableHash(`${dateKey}:${left.slug}`);
+      const rightHash = stableHash(`${dateKey}:${right.slug}`);
+      return leftHash - rightHash;
+    })
+    .slice(0, limit);
 }

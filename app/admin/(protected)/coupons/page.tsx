@@ -43,11 +43,7 @@ export default async function AdminCouponsPage() {
         <div className="border border-gray-100 bg-white p-16 text-center">
           <TicketPercent size={36} className="mx-auto mb-4 text-[#E8A020]" />
           <p className="mb-4 text-gray-400">
-            No coupons yet. If you just added the new coupon system, run
-            <span className="mx-1 rounded bg-gray-100 px-1.5 py-0.5 text-gray-600">
-              npm run db:push
-            </span>
-            first.
+            No coupons yet. Create your first coupon here once your database setup is ready.
           </p>
           <Link
             href="/admin/coupons/new"

@@ -63,6 +63,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(collection, { status: 201 });
   } catch (error) {
     console.error("POST /api/categories error:", error);
-    return NextResponse.json({ error: "Failed to create collection" }, { status: 500 });
+    const message =
+      error instanceof Error && /does not exist|column|relation/i.test(error.message)
+        ? "Database schema needs updating. Run npm run db:push once, then try again."
+        : "Failed to create collection";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

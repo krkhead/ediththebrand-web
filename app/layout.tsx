@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import Navbar from "@/components/layout/Navbar";
-import DeliveryBanner from "@/components/layout/DeliveryBanner";
-import Footer from "@/components/layout/Footer";
-import CartDrawer from "@/components/shop/CartDrawer";
+import SiteChrome from "@/components/layout/SiteChrome";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -60,11 +57,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-[#F8F4EE]">
         <ClerkProvider>
-          <DeliveryBanner />
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <CartDrawer />
+          <SiteChrome>{children}</SiteChrome>
         </ClerkProvider>
       </body>
     </html>

@@ -27,6 +27,10 @@ export default function CollectionForm({
 
   const uploadToCloudinary = useCallback(async (file: File): Promise<string | null> => {
     const res = await fetch("/api/upload", { method: "POST" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to prepare image upload");
+    }
     const { timestamp, signature, apiKey, cloudName, folder } = await res.json();
 
     const form = new FormData();
@@ -40,8 +44,15 @@ export default function CollectionForm({
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       { method: "POST", body: form }
     );
+    if (!upload.ok) {
+      const data = await upload.json().catch(() => ({}));
+      throw new Error(data.error?.message || data.error || "Image upload failed");
+    }
     const data = await upload.json();
-    return data.secure_url ?? null;
+    if (!data.secure_url) {
+      throw new Error(data.error?.message || "Image upload failed");
+    }
+    return data.secure_url;
   }, []);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +69,7 @@ export default function CollectionForm({
       }
       setImage(uploadedUrl);
     } catch (err) {
-      setError("Collection image upload failed. Check your Cloudinary setup.");
+      setError(err instanceof Error ? err.message : "Collection image upload failed.");
       console.error(err);
     } finally {
       setUploadingImage(false);
@@ -142,6 +153,9 @@ export default function CollectionForm({
         <div className="grid gap-4 md:grid-cols-[1fr_160px]">
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-600">Sort Order</label>
+            <p className="text-xs text-gray-400">
+              Lower numbers appear first on the Shop collections page. Use 1, 2, 3 to control the order.
+            </p>
             <input
               type="number"
               value={sortOrder}

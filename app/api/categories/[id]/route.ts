@@ -99,7 +99,11 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PATCH /api/categories/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update collection" }, { status: 500 });
+    const message =
+      error instanceof Error && /does not exist|column|relation/i.test(error.message)
+        ? "Database schema needs updating. Run npm run db:push once, then try again."
+        : "Failed to update collection";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
