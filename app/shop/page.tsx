@@ -10,6 +10,7 @@ import {
   placeholderProducts,
 } from "@/lib/storefront-data";
 import { asc } from "drizzle-orm";
+import { getProductImageUrls } from "@/lib/shop-utils";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -33,7 +34,7 @@ export default async function ShopLandingPage() {
 
   const heroImage =
     collections.find((collection) => collection.image)?.image ??
-    placeholderProducts[0]?.images?.[0] ??
+    getProductImageUrls(placeholderProducts[0])[0] ??
     "/brand/IMG_3841.JPG.jpeg";
 
   return (
@@ -132,7 +133,7 @@ export default async function ShopLandingPage() {
                 >
                   {collection.name}
                 </h3>
-                <p className="text-sm text-[#8A7D72]">
+                <p className="min-h-[4.5rem] text-sm leading-relaxed text-[#8A7D72] whitespace-normal break-words text-pretty">
                   {collection.description || `Browse the ${collection.name} collection.`}
                 </p>
               </div>

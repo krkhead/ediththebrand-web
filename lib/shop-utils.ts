@@ -26,6 +26,20 @@ export function formatNaira(amount: number) {
   return `₦${amount.toLocaleString()}`;
 }
 
+export function getProductImageUrls(product: Pick<Product, "images">) {
+  const rawImages = product.images as unknown;
+
+  if (Array.isArray(rawImages)) {
+    return rawImages.filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+  }
+
+  if (typeof rawImages === "string" && rawImages.trim()) {
+    return [rawImages];
+  }
+
+  return [];
+}
+
 export function normalizeCode(value: string) {
   return value.trim().toUpperCase();
 }

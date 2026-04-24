@@ -14,7 +14,12 @@ import {
   type Review,
 } from "@/lib/db/schema";
 import { placeholderCollections, placeholderProducts } from "@/lib/storefront-data";
-import { formatNaira, isAllProductsCollection, matchesCollection } from "@/lib/shop-utils";
+import {
+  formatNaira,
+  getProductImageUrls,
+  isAllProductsCollection,
+  matchesCollection,
+} from "@/lib/shop-utils";
 import ReviewForm from "@/components/shop/ReviewForm";
 import AddToCartButton from "@/components/shop/AddToCartButton";
 
@@ -96,7 +101,7 @@ export default async function ProductDetailPage({
     productReviews = [];
   }
 
-  const image = (product.images as string[])?.[0] || null;
+  const image = getProductImageUrls(product)[0] || null;
   const averageRating =
     productReviews.length > 0
       ? productReviews.reduce((sum, review) => sum + review.rating, 0) /
@@ -114,12 +119,29 @@ export default async function ProductDetailPage({
       </div>
 
       <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#F0EAE0]">
+        <div className="relative min-h-[420px] overflow-hidden border border-[#E0D8CE] bg-[#F0EAE0] shadow-sm lg:min-h-[620px]">
           {image ? (
-            <Image src={image} alt={product.name} fill className="object-cover" />
+            <>
+              <Image
+                src={image}
+                alt={product.name}
+                fill
+                sizes="(min-width: 1024px) 48vw, 100vw"
+                className="object-cover object-center"
+                priority
+              />
+              {!product.inStock && (
+                <div className="absolute inset-0 bg-[#1A1410]/10" />
+              )}
+            </>
           ) : (
             <div className="flex h-full items-center justify-center text-[#8A7D72]">
               No image available
+            </div>
+          )}
+          {!product.inStock && (
+            <div className="absolute left-5 top-5 z-10 border border-[#F8F4EE]/80 bg-[#3D2E24]/85 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-[#F8F4EE] backdrop-blur-sm">
+              Out of Stock
             </div>
           )}
         </div>
@@ -163,9 +185,14 @@ export default async function ProductDetailPage({
             </div>
           </div>
 
-          <p className="text-base leading-relaxed text-[#6D6055]">
-            {product.description || "Product details will be added soon."}
-          </p>
+          <div className="border border-[#E0D8CE] bg-white px-5 py-5 shadow-sm">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-[#8A7D72]">
+              Description
+            </p>
+            <p className="mt-3 text-base leading-8 text-[#6D6055] whitespace-pre-line break-words text-pretty">
+              {product.description || "Product details will be added soon."}
+            </p>
+          </div>
 
           <div className="flex flex-wrap items-center gap-4">
             <AddToCartButton

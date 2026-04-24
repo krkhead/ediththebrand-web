@@ -1,7 +1,7 @@
 "use client";
 
 import type { Product } from "@/lib/db/schema";
-import { formatNaira } from "@/lib/shop-utils";
+import { formatNaira, getProductImageUrls } from "@/lib/shop-utils";
 import AddToCartControls from "@/components/shop/AddToCartControls";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
@@ -20,7 +20,7 @@ export default function ProductCard({
   badges = [],
   showDescription = false,
 }: ProductCardProps) {
-  const image = (product.images as string[])?.[0] || null;
+  const image = getProductImageUrls(product)[0] || null;
   const price = product.price ? String(product.price) : null;
 
   return (

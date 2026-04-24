@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import type { Product } from "@/lib/db/schema";
 import { placeholderProducts } from "@/lib/storefront-data";
-import { formatNaira, getProductStatusBadges } from "@/lib/shop-utils";
+import { formatNaira, getProductImageUrls, getProductStatusBadges } from "@/lib/shop-utils";
 import AddToCartControls from "@/components/shop/AddToCartControls";
 
 interface FeaturedProductsProps {
@@ -43,7 +43,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
 
         <div className="grid gap-6 md:grid-cols-3">
           {displayProducts.slice(0, 3).map((product, index) => {
-            const image = (product.images as string[])?.[0] || null;
+            const image = getProductImageUrls(product)[0] || null;
             const price = product.price ? String(product.price) : null;
             const badges = getProductStatusBadges(product);
             const detailHref = `/shop/all-products/${product.slug}`;
