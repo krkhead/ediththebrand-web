@@ -1,5 +1,5 @@
 import type { CouponDefinition } from "@/lib/shop-config";
-import type { Category, Product } from "@/lib/db/schema";
+import type { Product } from "@/lib/db/schema";
 import { FALLBACK_COUPON_DEFINITIONS } from "@/lib/shop-config";
 import { ALL_PRODUCTS_COLLECTION_SLUG } from "@/lib/storefront-data";
 
@@ -36,6 +36,21 @@ export function slugify(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+export function matchesCollection(productCollectionSlug: string | null, productCategory: string | null, collection: { slug: string; name: string }) {
+  if (productCollectionSlug) {
+    return productCollectionSlug === collection.slug;
+  }
+
+  if (!productCategory) {
+    return false;
+  }
+
+  return (
+    slugify(productCategory) === collection.slug ||
+    productCategory.trim().toLowerCase() === collection.name.trim().toLowerCase()
+  );
 }
 
 export function resolveCoupon(
@@ -137,13 +152,10 @@ export function buildCollectionHref(
   return query ? `/shop/${collectionSlug}?${query}` : `/shop/${collectionSlug}`;
 }
 
-export function getAllCategoriesForFilter(products: Product[], collections: Category[]) {
-  const categoryNames =
-    collections.length > 0
-      ? collections.map((collection) => collection.name)
-      : products
-          .map((product) => product.category)
-          .filter((category): category is string => Boolean(category));
+export function getAllCategoriesForFilter(products: Product[]) {
+  const categoryNames = products
+    .map((product) => product.category)
+    .filter((category): category is string => Boolean(category));
 
   return [...new Set(categoryNames)];
 }

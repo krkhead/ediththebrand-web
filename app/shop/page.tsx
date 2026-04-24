@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     "Explore Ediththebrand collections and shop authentic skincare by collection.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ShopLandingPage() {
   let collections: Category[] = [];
 

@@ -7,6 +7,7 @@ import { Upload, X, Loader2 } from "lucide-react";
 import type { Category, Product } from "@/lib/db/schema";
 import { placeholderCollections } from "@/lib/storefront-data";
 import { slugify } from "@/lib/shop-utils";
+import { PRODUCT_CATEGORY_OPTIONS } from "@/lib/product-config";
 
 interface ProductFormProps {
   product?: Product;
@@ -22,10 +23,21 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     placeholderCollections
   );
 
+  const existingCategory = product?.category ?? "";
+  const existingIsPreset = PRODUCT_CATEGORY_OPTIONS.includes(
+    existingCategory as (typeof PRODUCT_CATEGORY_OPTIONS)[number]
+  );
+
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(product?.price ?? "");
-  const [category, setCategory] = useState(product?.category ?? "");
+  const [categoryOption, setCategoryOption] = useState(
+    existingCategory ? (existingIsPreset ? existingCategory : "Other") : ""
+  );
+  const [customCategory, setCustomCategory] = useState(
+    existingCategory && !existingIsPreset ? existingCategory : ""
+  );
+  const [collectionSlug, setCollectionSlug] = useState(product?.collectionSlug ?? "");
   const [inStock, setInStock] = useState(product?.inStock ?? true);
   const [featured, setFeatured] = useState(product?.featured ?? false);
   const [isNewArrival, setIsNewArrival] = useState(product?.isNewArrival ?? false);
@@ -44,7 +56,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           setAvailableCollections(data);
         }
       } catch {
-        // fallback to static list
+        // fall back to local placeholder collections
       }
     };
 
@@ -81,9 +93,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     return data.secure_url;
   }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
+
     setUploadingImages(true);
     setError("");
     try {
@@ -98,7 +111,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       console.error(err);
     } finally {
       setUploadingImages(false);
-      e.target.value = "";
+      event.target.value = "";
     }
   };
 
@@ -106,12 +119,16 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError("");
     setSaving(true);
 
     const slug = product?.slug ?? slugify(name);
+    const finalCategory =
+      categoryOption === "Other"
+        ? customCategory.trim()
+        : categoryOption.trim();
 
     const payload = {
       name,
@@ -119,7 +136,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       description,
       price: price ? String(price) : null,
       images,
-      category,
+      category: finalCategory || null,
+      collectionSlug: collectionSlug || null,
       inStock,
       featured,
       isNewArrival,
@@ -151,15 +169,14 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
+    <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+        <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Basic Info */}
-      <div className="bg-white border border-gray-100 shadow-sm p-6 space-y-5">
+      <div className="space-y-5 border border-gray-100 bg-white p-6 shadow-sm">
         <h2
           className="text-2xl text-[#3D2E24]"
           style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
@@ -168,75 +185,97 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         </h2>
 
         <div className="space-y-1">
-          <label className="text-sm text-gray-600 font-medium">
-            Product Name *
-          </label>
+          <label className="text-sm font-medium text-gray-600">Product Name *</label>
           <input
             required
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8A020]"
+            onChange={(event) => setName(event.target.value)}
+            className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
             placeholder="e.g. Numbuzin 9+ Glow Set"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm text-gray-600 font-medium">
-            Description
-          </label>
+          <label className="text-sm font-medium text-gray-600">Description</label>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8A020] resize-none"
-            placeholder="e.g. High-PDRN Glow Toning Toner + Essence"
+            onChange={(event) => setDescription(event.target.value)}
+            rows={4}
+            className="w-full resize-none border border-gray-200 px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
+            placeholder="Write the full product description here."
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-sm text-gray-600 font-medium">
-              Price (₦)
-            </label>
+            <label className="text-sm font-medium text-gray-600">Price (₦)</label>
             <input
               type="number"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8A020]"
-              placeholder="Leave blank → DM for price"
+              onChange={(event) => setPrice(event.target.value)}
+              className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
+              placeholder="Leave blank -> DM for price"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm text-gray-600 font-medium">
-              Category
-            </label>
+            <label className="text-sm font-medium text-gray-600">Product Category</label>
             <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8A020] bg-white"
+              value={categoryOption}
+              onChange={(event) => setCategoryOption(event.target.value)}
+              className="w-full border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
             >
               <option value="">Select category...</option>
-              {availableCollections.map((collection) => (
-                <option key={collection.id} value={collection.name}>
-                  {collection.name}
+              {PRODUCT_CATEGORY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Toggles */}
+        {categoryOption === "Other" && (
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-600">Custom Category</label>
+            <input
+              value={customCategory}
+              onChange={(event) => setCustomCategory(event.target.value)}
+              className="w-full border border-gray-200 px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
+              placeholder="Enter a custom category"
+            />
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-600">Collection</label>
+          <select
+            value={collectionSlug}
+            onChange={(event) => setCollectionSlug(event.target.value)}
+            className="w-full border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#E8A020] focus:outline-none"
+          >
+            <option value="">Select collection...</option>
+            {availableCollections.map((collection) => (
+              <option key={collection.id} value={collection.slug}>
+                {collection.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-400">
+            Collections decide where the product appears on the Shop page. Categories are used for filtering.
+          </p>
+        </div>
+
         <div className="flex flex-wrap gap-8 pt-2">
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-3">
             <div
               onClick={() => setInStock(!inStock)}
-              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+              className={`h-5 w-10 rounded-full transition-colors ${
                 inStock ? "bg-[#2C7A2C]" : "bg-gray-300"
               }`}
             >
               <span
-                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                className={`mt-0.5 block h-4 w-4 rounded-full bg-white shadow transition-transform ${
                   inStock ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -244,15 +283,15 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             <span className="text-sm text-gray-600">In Stock</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-3">
             <div
               onClick={() => setFeatured(!featured)}
-              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+              className={`h-5 w-10 rounded-full transition-colors ${
                 featured ? "bg-[#E8A020]" : "bg-gray-300"
               }`}
             >
               <span
-                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                className={`mt-0.5 block h-4 w-4 rounded-full bg-white shadow transition-transform ${
                   featured ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -260,15 +299,15 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             <span className="text-sm text-gray-600">Featured on Home</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-3">
             <div
               onClick={() => setIsNewArrival(!isNewArrival)}
-              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+              className={`h-5 w-10 rounded-full transition-colors ${
                 isNewArrival ? "bg-[#A14D2A]" : "bg-gray-300"
               }`}
             >
               <span
-                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                className={`mt-0.5 block h-4 w-4 rounded-full bg-white shadow transition-transform ${
                   isNewArrival ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -276,15 +315,15 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             <span className="text-sm text-gray-600">Show “New Arrival” on Home</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-3">
             <div
               onClick={() => setIsBackInStock(!isBackInStock)}
-              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${
+              className={`h-5 w-10 rounded-full transition-colors ${
                 isBackInStock ? "bg-[#7A5C43]" : "bg-gray-300"
               }`}
             >
               <span
-                className={`block w-4 h-4 rounded-full bg-white shadow mt-0.5 transition-transform ${
+                className={`mt-0.5 block h-4 w-4 rounded-full bg-white shadow transition-transform ${
                   isBackInStock ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -294,8 +333,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         </div>
       </div>
 
-      {/* Images */}
-      <div className="bg-white border border-gray-100 shadow-sm p-6 space-y-4">
+      <div className="space-y-4 border border-gray-100 bg-white p-6 shadow-sm">
         <h2
           className="text-2xl text-[#3D2E24]"
           style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
@@ -303,29 +341,28 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           Product Images
         </h2>
         <p className="text-xs text-gray-400">
-          First image is the main display image. You can add multiple.
+          The first image becomes the main product image.
         </p>
 
-        {/* Image previews */}
         {images.length > 0 && (
-          <div className="flex gap-3 flex-wrap">
-            {images.map((url, i) => (
-              <div key={`${i}-${url}`} className="relative w-24 h-24 group">
+          <div className="flex flex-wrap gap-3">
+            {images.map((url, index) => (
+              <div key={`${index}-${url}`} className="group relative h-24 w-24">
                 <Image
                   src={url}
-                  alt={`Product image ${i + 1}`}
+                  alt={`Product image ${index + 1}`}
                   fill
                   className="object-cover"
                 />
-                {i === 0 && (
-                  <span className="absolute bottom-0 left-0 right-0 bg-[#E8A020] text-[#3D2E24] text-[8px] text-center py-0.5 font-bold">
+                {index === 0 && (
+                  <span className="absolute bottom-0 left-0 right-0 bg-[#E8A020] py-0.5 text-center text-[8px] font-bold text-[#3D2E24]">
                     MAIN
                   </span>
                 )}
                 <button
                   type="button"
-                  onClick={() => removeImage(i)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeImage(index)}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   <X size={10} />
                 </button>
@@ -334,14 +371,19 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           </div>
         )}
 
-        {/* Upload button */}
-        <label className={`flex items-center gap-3 border-2 border-dashed p-6 transition-colors ${uploadingImages ? "border-[#E8A020] cursor-wait" : "border-gray-200 cursor-pointer hover:border-[#E8A020]"}`}>
-          <Upload size={20} className="text-gray-400 flex-shrink-0" />
+        <label
+          className={`flex items-center gap-3 border-2 border-dashed p-6 transition-colors ${
+            uploadingImages
+              ? "cursor-wait border-[#E8A020]"
+              : "cursor-pointer border-gray-200 hover:border-[#E8A020]"
+          }`}
+        >
+          <Upload size={20} className="flex-shrink-0 text-gray-400" />
           <div>
             <p className="text-sm text-gray-600">
               {uploadingImages ? "Uploading, please wait..." : "Click to upload images"}
             </p>
-            <p className="text-xs text-gray-400">JPG, PNG, WEBP · Max 10MB each</p>
+            <p className="text-xs text-gray-400">JPG, PNG, WEBP - Max 10MB each</p>
           </div>
           <input
             type="file"
@@ -357,12 +399,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         </label>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-4">
         <button
           type="submit"
           disabled={saving || uploadingImages}
-          className="flex items-center gap-2 bg-[#3D2E24] text-white px-8 py-3 text-sm hover:bg-[#2A1F18] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-[#3D2E24] px-8 py-3 text-sm text-white transition-colors hover:bg-[#2A1F18] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving && <Loader2 size={16} className="animate-spin" />}
           {mode === "new" ? "Add Product" : "Save Changes"}
@@ -370,7 +411,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         <button
           type="button"
           onClick={() => router.push("/admin/products")}
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          className="text-sm text-gray-500 transition-colors hover:text-gray-700"
         >
           Cancel
         </button>

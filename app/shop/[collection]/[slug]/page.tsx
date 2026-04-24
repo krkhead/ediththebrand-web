@@ -14,9 +14,11 @@ import {
   type Review,
 } from "@/lib/db/schema";
 import { placeholderCollections, placeholderProducts } from "@/lib/storefront-data";
-import { formatNaira, isAllProductsCollection } from "@/lib/shop-utils";
+import { formatNaira, isAllProductsCollection, matchesCollection } from "@/lib/shop-utils";
 import ReviewForm from "@/components/shop/ReviewForm";
 import AddToCartButton from "@/components/shop/AddToCartButton";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -72,7 +74,14 @@ export default async function ProductDetailPage({
     : allCollections.find((item) => item.slug === collection);
 
   if (!isAllProductsCollection(collection)) {
-    if (!collectionItem || product.category !== collectionItem.name) {
+    if (
+      !collectionItem ||
+      !matchesCollection(
+        product.collectionSlug ?? null,
+        product.category ?? null,
+        collectionItem
+      )
+    ) {
       notFound();
     }
   }

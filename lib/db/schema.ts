@@ -18,6 +18,7 @@ export const products = pgTable("products", {
   price: numeric("price", { precision: 10, scale: 2 }),
   images: jsonb("images").$type<string[]>().default([]),
   category: text("category"),
+  collectionSlug: text("collection_slug"),
   origin: text("origin"), // 'KR' | 'US' | 'GB' | 'JP' | 'Other'
   inStock: boolean("in_stock").default(true),
   featured: boolean("featured").default(false),

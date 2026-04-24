@@ -12,6 +12,7 @@ import {
   getAllCategoriesForFilter,
   isAllProductsCollection,
   matchesProductQuery,
+  matchesCollection,
   paginateItems,
   sortProducts,
   type ProductSort,
@@ -22,6 +23,8 @@ import {
   placeholderProducts,
   PRODUCTS_PER_PAGE,
 } from "@/lib/storefront-data";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -76,7 +79,11 @@ export default async function CollectionPage({
 
   const collectionProducts = isAllProductsCollection(collection)
     ? allProducts
-    : allProducts.filter((product) => product.category === collectionItem?.name);
+    : allProducts.filter((product) =>
+        collectionItem
+          ? matchesCollection(product.collectionSlug ?? null, product.category ?? null, collectionItem)
+          : false
+      );
 
   const filteredProducts = collectionProducts.filter((product) => {
     const matchesCategory = isAllProductsCollection(collection)
@@ -93,7 +100,7 @@ export default async function CollectionPage({
     PRODUCTS_PER_PAGE
   );
   const availableCategories = isAllProductsCollection(collection)
-    ? getAllCategoriesForFilter(allProducts, collections)
+    ? getAllCategoriesForFilter(allProducts)
     : [];
 
   const title = collectionItem?.name ?? "All Products";

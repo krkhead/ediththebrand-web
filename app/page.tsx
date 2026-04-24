@@ -9,6 +9,8 @@ import { products } from "@/lib/db/schema";
 import { placeholderProducts } from "@/lib/storefront-data";
 import { selectDailyFeaturedProducts } from "@/lib/shop-utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   let featuredProducts: Product[] = placeholderProducts;
   try {
