@@ -19,14 +19,18 @@ export const adminAuth = {
   maxAge: ADMIN_SESSION_MAX_AGE,
 } as const;
 
-function base64UrlToBytes(value: string): Uint8Array {
+function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64.padEnd(
     base64.length + ((4 - (base64.length % 4)) % 4),
     "="
   );
   const binary = atob(padded);
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 async function getHmacKey(): Promise<CryptoKey> {
