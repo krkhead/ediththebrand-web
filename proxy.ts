@@ -4,7 +4,7 @@ import { adminAuth, getAdminSessionFromRequest } from "@/lib/admin-auth-edge";
 import { clerkRuntime } from "@/lib/clerk-config";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-const isAdminSignIn = createRouteMatcher(["/admin/sign-in(.*)"]);
+const isAdminSignIn = createRouteMatcher(["/admin/sign-in(.*)", "/admin/session"]);
 
 const clerkProxy = clerkMiddleware(async (auth, req) => {
   // Allow the sign-in page through unauthenticated
