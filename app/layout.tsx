@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import SiteChrome from "@/components/layout/SiteChrome";
+import { clerkRuntime } from "@/lib/clerk-config";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -50,15 +51,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const app = clerkRuntime.enabled ? (
+    <ClerkProvider>{children}</ClerkProvider>
+  ) : (
+    children
+  );
+
   return (
     <html
       lang="en"
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
       <body className="min-h-screen flex flex-col bg-[#F8F4EE]">
-        <ClerkProvider>
-          <SiteChrome>{children}</SiteChrome>
-        </ClerkProvider>
+        <SiteChrome>{app}</SiteChrome>
       </body>
     </html>
   );

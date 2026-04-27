@@ -18,10 +18,17 @@ import {
   formatNaira,
   getProductImageUrls,
   isAllProductsCollection,
+  isStorefrontReadyProduct,
   matchesCollection,
 } from "@/lib/shop-utils";
 import ReviewForm from "@/components/shop/ReviewForm";
 import AddToCartButton from "@/components/shop/AddToCartButton";
+import {
+  isVideoPreviewEnabled,
+  videoPreviewCollections,
+  videoPreviewProducts,
+  videoPreviewReviews,
+} from "@/lib/video-preview-data";
 
 export const dynamic = "force-dynamic";
 
@@ -51,24 +58,35 @@ function RatingStars({ rating }: { rating: number }) {
 
 export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ collection: string; slug: string }>;
+  searchParams?: Promise<{ preview?: string }>;
 }) {
   const { collection, slug } = await params;
+  const preview = searchParams ? (await searchParams).preview : undefined;
+  const useVideoPreview = isVideoPreviewEnabled(preview);
 
   let allProducts: Product[] = [];
   let allCollections: Category[] = [];
   let productReviews: Review[] = [];
 
-  try {
-    allProducts = await db.select().from(products);
-    allCollections = await db
-      .select()
-      .from(categories)
-      .orderBy(asc(categories.sortOrder), asc(categories.name));
-  } catch {
-    allProducts = placeholderProducts;
-    allCollections = placeholderCollections;
+  if (useVideoPreview) {
+    allProducts = videoPreviewProducts;
+    allCollections = videoPreviewCollections;
+  } else {
+    try {
+      allProducts = (await db.select().from(products)).filter(
+        isStorefrontReadyProduct
+      );
+      allCollections = await db
+        .select()
+        .from(categories)
+        .orderBy(asc(categories.sortOrder), asc(categories.name));
+    } catch {
+      allProducts = placeholderProducts;
+      allCollections = placeholderCollections;
+    }
   }
 
   const product = allProducts.find((item) => item.slug === slug);
@@ -91,14 +109,20 @@ export default async function ProductDetailPage({
     }
   }
 
-  try {
-    productReviews = await db
-      .select()
-      .from(reviews)
-      .where(eq(reviews.productId, product.id))
-      .orderBy(desc(reviews.createdAt));
-  } catch {
-    productReviews = [];
+  if (useVideoPreview) {
+    productReviews = videoPreviewReviews.filter(
+      (review) => review.productId === product.id
+    );
+  } else {
+    try {
+      productReviews = await db
+        .select()
+        .from(reviews)
+        .where(eq(reviews.productId, product.id))
+        .orderBy(desc(reviews.createdAt));
+    } catch {
+      productReviews = [];
+    }
   }
 
   const image = getProductImageUrls(product)[0] || null;
@@ -107,7 +131,7 @@ export default async function ProductDetailPage({
       ? productReviews.reduce((sum, review) => sum + review.rating, 0) /
         productReviews.length
       : 0;
-  const backHref = `/shop/${collection}`;
+  const backHref = `/shop/${collection}${useVideoPreview ? "?preview=video" : ""}`;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-36">

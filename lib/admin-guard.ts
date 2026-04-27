@@ -1,12 +1,31 @@
+import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-
-const ADMIN_EMAIL = "editholufestus@gmail.com";
+import {
+  ADMIN_EMAIL,
+  clerkRuntime,
+  getClerkDisabledMessage,
+} from "@/lib/clerk-config";
 
 export async function requireAdmin(): Promise<
   | { authorized: true; error?: undefined }
   | { authorized: false; error: NextResponse }
 > {
+  const adminSession = await getAdminSessionFromCookies();
+  if (adminSession) {
+    return { authorized: true };
+  }
+
+  if (!clerkRuntime.enabled) {
+    return {
+      authorized: false,
+      error: NextResponse.json(
+        { error: getClerkDisabledMessage() },
+        { status: 503 }
+      ),
+    };
+  }
+
   const { userId } = await auth();
   if (!userId) {
     return {

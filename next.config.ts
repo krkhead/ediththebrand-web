@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const CSP = [
   "default-src 'self'",
@@ -34,6 +35,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
+  outputFileTracingRoot: path.resolve(__dirname),
   images: {
     remotePatterns: [
       {

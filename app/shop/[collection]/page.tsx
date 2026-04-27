@@ -11,6 +11,7 @@ import {
   buildCollectionHref,
   getAllCategoriesForFilter,
   isAllProductsCollection,
+  isStorefrontReadyProduct,
   matchesProductQuery,
   matchesCollection,
   paginateItems,
@@ -23,6 +24,11 @@ import {
   placeholderProducts,
   PRODUCTS_PER_PAGE,
 } from "@/lib/storefront-data";
+import {
+  isVideoPreviewEnabled,
+  videoPreviewCollections,
+  videoPreviewProducts,
+} from "@/lib/video-preview-data";
 
 export const dynamic = "force-dynamic";
 
@@ -50,23 +56,33 @@ export default async function CollectionPage({
     sort?: ProductSort;
     page?: string;
     category?: string;
+    preview?: string;
   }>;
 }) {
   const { collection } = await params;
-  const { q = "", sort = "newest", page = "1", category } = await searchParams;
+  const { q = "", sort = "newest", page = "1", category, preview } =
+    await searchParams;
+  const useVideoPreview = isVideoPreviewEnabled(preview);
 
   let collections: Category[] = [];
   let allProducts: Product[] = [];
 
-  try {
-    collections = await db
-      .select()
-      .from(categories)
-      .orderBy(asc(categories.sortOrder), asc(categories.name));
-    allProducts = await db.select().from(products);
-  } catch {
-    collections = placeholderCollections;
-    allProducts = placeholderProducts;
+  if (useVideoPreview) {
+    collections = videoPreviewCollections;
+    allProducts = videoPreviewProducts;
+  } else {
+    try {
+      collections = await db
+        .select()
+        .from(categories)
+        .orderBy(asc(categories.sortOrder), asc(categories.name));
+      allProducts = (await db.select().from(products)).filter(
+        isStorefrontReadyProduct
+      );
+    } catch {
+      collections = placeholderCollections;
+      allProducts = placeholderProducts;
+    }
   }
 
   const collectionItem = isAllProductsCollection(collection)
@@ -202,7 +218,7 @@ export default async function CollectionPage({
               <ProductCard
                 key={product.id}
                 product={product}
-                href={`/shop/${collection}/${product.slug}`}
+                href={`/shop/${collection}/${product.slug}${useVideoPreview ? "?preview=video" : ""}`}
               />
             ))}
           </div>

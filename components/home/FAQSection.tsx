@@ -19,7 +19,6 @@ export default function FAQSection() {
   return (
     <section className="bg-[#F8F4EE] py-20 px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-12">
           <div className="h-px flex-1 bg-[#E0D8CE]" />
           <div className="text-center space-y-1 shrink-0">
@@ -39,7 +38,6 @@ export default function FAQSection() {
           <div className="h-px flex-1 bg-[#E0D8CE]" />
         </div>
 
-        {/* 3-per-row grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {faqImages.map((src, i) => (
             <motion.div
@@ -63,7 +61,6 @@ export default function FAQSection() {
           ))}
         </div>
 
-        {/* Lightbox */}
         {active !== null && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -86,29 +83,26 @@ export default function FAQSection() {
                 height={800}
                 className="w-full h-auto object-contain"
               />
-              {/* Nav arrows */}
               <button
                 onClick={() =>
                   setActive((active - 1 + faqImages.length) % faqImages.length)
                 }
                 className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-[#F8F4EE] hover:text-[#E8A020] transition-colors text-3xl leading-none hidden sm:block"
               >
-                ‹
+                {"<"}
               </button>
               <button
                 onClick={() => setActive((active + 1) % faqImages.length)}
                 className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 text-[#F8F4EE] hover:text-[#E8A020] transition-colors text-3xl leading-none hidden sm:block"
               >
-                ›
+                {">"}
               </button>
-              {/* Close */}
               <button
                 onClick={() => setActive(null)}
                 className="absolute -top-10 right-0 text-[#F8F4EE] hover:text-[#E8A020] text-sm tracking-widest uppercase transition-colors"
               >
-                Close ×
+                Close X
               </button>
-              {/* Counter */}
               <p
                 className="text-center text-[#8A7D72] text-xs tracking-widest mt-3"
                 style={{ fontFamily: "var(--font-dm-mono), monospace" }}

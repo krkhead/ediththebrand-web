@@ -27,12 +27,14 @@ function buildWhatsAppLink(
           ? ` (${formatNaira(parseFloat(item.price) * item.quantity)} total)`
           : "";
 
-      return `• ${item.name} × ${item.quantity} — ${unitPrice}${lineTotal}`;
+      return `- ${item.name} x ${item.quantity} - ${unitPrice}${lineTotal}`;
     })
     .join("\n");
 
   const pricingLines = [
-    subtotal > 0 ? `*Subtotal:* ${formatNaira(subtotal)}` : "*Subtotal:* Price on request",
+    subtotal > 0
+      ? `*Subtotal:* ${formatNaira(subtotal)}`
+      : "*Subtotal:* Price on request",
     appliedCoupon && discount > 0
       ? `*Coupon:* ${appliedCoupon.code} (-${formatNaira(discount)})`
       : null,
@@ -187,7 +189,9 @@ export default function CartDrawer() {
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="w-6 text-center text-sm">{item.quantity}</span>
+                    <span className="w-6 text-center text-sm">
+                      {item.quantity}
+                    </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="flex h-7 w-7 items-center justify-center border border-[#8A7D72] transition-colors hover:border-[#3D2E24]"
@@ -241,7 +245,9 @@ export default function CartDrawer() {
               <div className="flex gap-2">
                 <input
                   value={couponCode}
-                  onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+                  onChange={(event) =>
+                    setCouponCode(event.target.value.toUpperCase())
+                  }
                   placeholder="Enter coupon"
                   className="min-w-0 flex-1 border border-[#E0D8CE] px-3 py-2 text-sm outline-none transition-colors focus:border-[#E8A020]"
                 />
@@ -272,7 +278,9 @@ export default function CartDrawer() {
                   <span className="text-[#8A7D72]">
                     {appliedCoupon.code} discount
                   </span>
-                  <span className="text-[#2C7A2C]">-{formatNaira(discount)}</span>
+                  <span className="text-[#2C7A2C]">
+                    -{formatNaira(discount)}
+                  </span>
                 </div>
               )}
             </div>
@@ -285,7 +293,13 @@ export default function CartDrawer() {
             </div>
 
             <a
-              href={buildWhatsAppLink(items, subtotal, discount, total, appliedCoupon)}
+              href={buildWhatsAppLink(
+                items,
+                subtotal,
+                discount,
+                total,
+                appliedCoupon
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-2 bg-[#25D366] py-3 text-sm tracking-widest text-white transition-colors hover:bg-[#1ebe5a]"

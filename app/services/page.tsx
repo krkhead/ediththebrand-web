@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: "Skincare Consultation",
   description:
-    "Book a 30-minute virtual skincare consultation with Ediththebrand. ₦25,000 — includes 2 months follow-up support.",
+    "Book a 30-minute virtual skincare consultation with Ediththebrand. NGN 25,000 includes 2 months of follow-up support.",
 };
 
 const whatHappens = [
@@ -46,7 +46,6 @@ const perks = [
 export default function ServicesPage() {
   return (
     <>
-      {/* Hero */}
       <div className="relative bg-[#3D2E24] pt-32 pb-20 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-15">
           <Image
@@ -75,11 +74,13 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Perks strip */}
       <div className="bg-[#F8F4EE] border-b border-[#E0D8CE]">
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
           {perks.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex flex-col items-center text-center gap-2">
+            <div
+              key={title}
+              className="flex flex-col items-center text-center gap-2"
+            >
               <div className="w-10 h-10 rounded-full bg-[#E8A020]/10 flex items-center justify-center">
                 <Icon size={20} className="text-[#E8A020]" />
               </div>
@@ -95,11 +96,8 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-16">
-        {/* Left - Details */}
         <div className="space-y-10">
-          {/* What happens */}
           <div>
             <h2
               className="text-3xl text-[#3D2E24] mb-4"
@@ -110,14 +108,16 @@ export default function ServicesPage() {
             <ul className="space-y-3">
               {whatHappens.map((item) => (
                 <li key={item} className="flex items-start gap-3">
-                  <CheckCircle size={18} className="text-[#2C7A2C] mt-0.5 flex-shrink-0" />
+                  <CheckCircle
+                    size={18}
+                    className="text-[#2C7A2C] mt-0.5 flex-shrink-0"
+                  />
                   <span className="text-sm text-[#3D2E24]">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* After session */}
           <div>
             <h2
               className="text-3xl text-[#3D2E24] mb-4"
@@ -131,14 +131,16 @@ export default function ServicesPage() {
             <ul className="space-y-3">
               {afterSession.map((item) => (
                 <li key={item} className="flex items-start gap-3">
-                  <CheckCircle size={18} className="text-[#E8A020] mt-0.5 flex-shrink-0" />
+                  <CheckCircle
+                    size={18}
+                    className="text-[#E8A020] mt-0.5 flex-shrink-0"
+                  />
                   <span className="text-sm text-[#3D2E24]">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Pricing */}
           <div className="bg-[#3D2E24] p-8 space-y-4">
             <h2
               className="text-3xl text-[#F8F4EE]"
@@ -150,10 +152,11 @@ export default function ServicesPage() {
               className="text-5xl text-[#E8A020]"
               style={{ fontFamily: "var(--font-cormorant), Georgia, serif" }}
             >
-              ₦25,000
+              NGN 25,000
             </p>
             <p className="text-sm text-[#8A7D72]">
-              Includes 2 months of follow-up support via WhatsApp text messages.
+              Includes 2 months of follow-up support via WhatsApp text
+              messages.
             </p>
             <div className="border-t border-[#5A4535] pt-4 space-y-2">
               <p className="text-xs text-[#8A7D72] font-medium uppercase tracking-wide">
@@ -173,7 +176,7 @@ export default function ServicesPage() {
                 rel="noopener noreferrer"
                 className="block text-sm text-[#F8F4EE] hover:text-[#E8A020] transition-colors"
               >
-                WhatsApp · +234 904 969 5621
+                WhatsApp - +234 904 969 5621
               </a>
               <a
                 href="mailto:editholufestus@gmail.com"
@@ -185,9 +188,11 @@ export default function ServicesPage() {
             </div>
           </div>
 
-          {/* Important note */}
           <div className="flex gap-3 border-l-2 border-[#E8A020] pl-4">
-            <AlertCircle size={18} className="text-[#E8A020] flex-shrink-0 mt-0.5" />
+            <AlertCircle
+              size={18}
+              className="text-[#E8A020] flex-shrink-0 mt-0.5"
+            />
             <div className="space-y-1">
               <p className="text-sm font-medium text-[#3D2E24]">Important</p>
               <p className="text-sm text-[#8A7D72]">
@@ -199,7 +204,6 @@ export default function ServicesPage() {
           </div>
         </div>
 
-        {/* Right - Booking */}
         <div>
           <h2
             className="text-3xl text-[#3D2E24] mb-6"

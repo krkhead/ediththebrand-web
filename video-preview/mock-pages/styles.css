@@ -1,0 +1,300 @@
+﻿:root {
+  --bg: #f8f4ee;
+  --panel: #ffffff;
+  --surface: #f0eae0;
+  --text: #3d2e24;
+  --muted: #8a7d72;
+  --accent: #e8a020;
+  --deep: #1a1410;
+  --line: #e0d8ce;
+  --success: #2c7a2c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.page {
+  width: 1600px;
+  min-height: 1000px;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.sans { font-family: 'Segoe UI', Arial, sans-serif; }
+.mono { font-family: Consolas, 'Courier New', monospace; }
+.hero {
+  min-height: 1000px;
+  padding: 96px 88px 72px;
+  background: linear-gradient(90deg, rgba(61,46,36,0.96) 0%, rgba(61,46,36,0.88) 40%, rgba(61,46,36,0.55) 100%), url('file:///C:/Users/onuor/ediththebrand-web/public/brand/IMG_3841.JPG.jpeg') center/cover no-repeat;
+  color: #f8f4ee;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+}
+.overline {
+  color: var(--accent);
+  font: 13px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+}
+.hero h1 {
+  font-size: 118px;
+  line-height: 0.95;
+  margin: 18px 0 8px;
+  font-weight: 400;
+}
+.hero h1 em {
+  color: var(--accent);
+  font-style: italic;
+}
+.hero h2 {
+  margin: 0 0 18px;
+  font-size: 48px;
+  color: rgba(248,244,238,0.76);
+  font-weight: 400;
+}
+.hero p {
+  max-width: 520px;
+  color: rgba(248,244,238,0.72);
+  font: 18px/1.7 'Segoe UI', Arial, sans-serif;
+}
+.actions { display: flex; gap: 16px; margin: 28px 0 30px; }
+.btn {
+  padding: 15px 24px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font: 12px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.btn-primary { background: var(--accent); color: var(--text); }
+.btn-secondary { border-color: rgba(248,244,238,0.35); color: #f8f4ee; }
+.search {
+  margin-top: 10px;
+  max-width: 620px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(248,244,238,0.95);
+  padding: 16px 18px;
+}
+.search input {
+  border: 0;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font: 15px 'Segoe UI', Arial, sans-serif;
+  color: var(--text);
+}
+.collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  height: 560px;
+}
+.tile, .card-image, .collection-image, .product-image {
+  background-size: cover;
+  background-position: center;
+}
+.tile.large { grid-row: span 2; background-image: url('file:///C:/Users/onuor/ediththebrand-web/public/brand/IMG_6389.JPG.jpeg'); }
+.tile.one { background-image: url('file:///C:/Users/onuor/ediththebrand-web/public/brand/IMG_1549.JPG.jpeg'); }
+.tile.two { background-image: url('file:///C:/Users/onuor/ediththebrand-web/public/brand/IMG_4709.JPG.jpeg'); }
+.section {
+  padding: 82px 88px;
+}
+.section-dark {
+  background: var(--text);
+  color: #f8f4ee;
+}
+.heading-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 34px;
+}
+.heading-row h2, .section h1, .section h2 {
+  margin: 8px 0 0;
+  font-size: 54px;
+  font-weight: 400;
+}
+.subtle-link {
+  color: var(--muted);
+  font: 14px 'Segoe UI', Arial, sans-serif;
+}
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.card { background: transparent; }
+.card-image {
+  aspect-ratio: 3 / 4;
+  position: relative;
+  background-color: #2a1f18;
+}
+.badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(248,244,238,0.92);
+  padding: 7px 10px;
+  color: var(--text);
+  font: 10px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.origin {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: var(--accent);
+  color: var(--text);
+  padding: 6px 10px;
+  font: 10px Consolas, monospace;
+  letter-spacing: 0.18em;
+}
+.card-copy { margin-top: 14px; }
+.eyebrow {
+  color: var(--muted);
+  font: 11px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+.card-title {
+  margin: 8px 0;
+  font-size: 32px;
+  color: inherit;
+}
+.price {
+  color: var(--accent);
+  font: 16px 'Segoe UI', Arial, sans-serif;
+}
+.inline-btn {
+  margin-top: 14px;
+  display: inline-block;
+  padding: 11px 16px;
+  border: 1px solid currentColor;
+  font: 11px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.shop-hero {
+  padding: 110px 88px 52px;
+  background: linear-gradient(180deg, rgba(61,46,36,0.96), rgba(61,46,36,0.92)), url('file:///C:/Users/onuor/ediththebrand-web/public/brand/IMG_1549.JPG.jpeg') center/cover;
+  color: #f8f4ee;
+}
+.shop-hero p.desc {
+  color: var(--muted);
+  max-width: 700px;
+  font: 18px/1.7 'Segoe UI', Arial, sans-serif;
+}
+.collections-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.collection-card {
+  background: white;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 32px rgba(61,46,36,0.06);
+}
+.collection-image { aspect-ratio: 4 / 3; }
+.collection-copy { padding: 22px; }
+.collection-copy p { margin: 10px 0 0; color: var(--muted); font: 15px/1.7 'Segoe UI', Arial, sans-serif; }
+.filters {
+  display: grid;
+  grid-template-columns: 1.2fr 220px 220px;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.filter-box {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 14px 16px;
+  font: 14px 'Segoe UI', Arial, sans-serif;
+  color: var(--text);
+}
+.filter-label { display: block; color: var(--muted); font: 10px 'Segoe UI', Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 6px; }
+.category-row { display: flex; gap: 10px; margin: 18px 0 26px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  background: white;
+  color: var(--muted);
+  font: 13px 'Segoe UI', Arial, sans-serif;
+}
+.chip.active { background: var(--text); border-color: var(--text); color: #f8f4ee; }
+.stats { display: flex; justify-content: space-between; color: var(--muted); font: 14px 'Segoe UI', Arial, sans-serif; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 26px; }
+.product-layout {
+  padding: 72px 88px 88px;
+}
+.product-top {
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  gap: 48px;
+}
+.product-image {
+  min-height: 680px;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 32px rgba(61,46,36,0.06);
+}
+.tokens { display: flex; gap: 10px; flex-wrap: wrap; }
+.token {
+  padding: 8px 12px;
+  font: 11px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+.token.accent { background: var(--accent); color: var(--text); }
+.token.subtle { border: 1px solid #c9b8a8; color: var(--muted); }
+.product-copy h1 { font-size: 64px; font-weight: 400; margin: 16px 0 8px; }
+.rating-row { display: flex; align-items: center; gap: 12px; margin: 18px 0 22px; }
+.desc-panel {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 22px;
+  box-shadow: 0 10px 24px rgba(61,46,36,0.04);
+  margin: 24px 0;
+}
+.desc-panel p { color: #6d6055; font: 16px/1.9 'Segoe UI', Arial, sans-serif; margin: 10px 0 0; }
+.review-grid { display: grid; grid-template-columns: 1fr 0.88fr; gap: 36px; margin-top: 54px; }
+.review-card, .review-form {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 22px;
+}
+.review-card p, .review-form p, .review-form li {
+  font: 15px/1.7 'Segoe UI', Arial, sans-serif;
+  color: #6d6055;
+}
+.cart-shell {
+  padding: 88px;
+  background: linear-gradient(180deg, #f8f4ee, #f5ede4);
+}
+.cart-panel {
+  width: 520px;
+  margin-left: auto;
+  background: #f8f4ee;
+  box-shadow: 0 18px 50px rgba(61,46,36,0.14);
+  border: 1px solid var(--line);
+}
+.cart-header, .cart-footer { padding: 22px 26px; border-bottom: 1px solid var(--line); }
+.cart-body { padding: 20px 26px; background: #faf7f3; }
+.cart-item { display: grid; grid-template-columns: 82px 1fr auto; gap: 14px; margin-bottom: 18px; }
+.thumb { width: 82px; height: 82px; background-size: cover; background-position: center; }
+.qty { margin-top: 10px; font: 13px 'Segoe UI', Arial, sans-serif; color: var(--muted); }
+.field {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 14px;
+  margin-top: 10px;
+}
+.cta-green {
+  background: #25d366;
+  color: white;
+  text-align: center;
+  padding: 15px 16px;
+  font: 12px 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: 18px;
+}
+.small { font: 12px 'Segoe UI', Arial, sans-serif; color: var(--muted); line-height: 1.6; }
+.stars { color: var(--accent); font-size: 18px; letter-spacing: 3px; }

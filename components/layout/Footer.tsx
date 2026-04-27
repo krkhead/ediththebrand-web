@@ -3,20 +3,38 @@ import Image from "next/image";
 
 function InstagramIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-      <circle cx="12" cy="12" r="4"/>
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
 }
+
+const footerLinks = [
+  { href: "/shop", label: "Shop" },
+  { href: "/services", label: "Book Consultation" },
+  { href: "/about", label: "About" },
+  { href: "/shipping", label: "Shipping" },
+  { href: "/returns", label: "Returns" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+];
 
 export default function Footer() {
   return (
     <footer className="bg-[#3D2E24] text-[#F8F4EE]">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Image
@@ -51,7 +69,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div className="space-y-4">
             <h4
               className="text-[#E8A020] text-lg"
@@ -60,11 +77,7 @@ export default function Footer() {
               Explore
             </h4>
             <ul className="space-y-2">
-              {[
-                { href: "/shop", label: "Shop" },
-                { href: "/services", label: "Book Consultation" },
-                { href: "/about", label: "About" },
-              ].map((link) => (
+              {footerLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -77,7 +90,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div className="space-y-4">
             <h4
               className="text-[#E8A020] text-lg"
@@ -93,7 +105,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-[#8A7D72] hover:text-[#E8A020] transition-colors"
                 >
-                  WhatsApp · +234 904 969 5621
+                  WhatsApp - +234 904 969 5621
                 </a>
               </li>
               <li>
@@ -117,10 +129,10 @@ export default function Footer() {
 
         <div className="border-t border-[#5A4535] mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-[#8A7D72] text-xs">
-            © 2025 Ediththebrand. All rights reserved.
+            Copyright 2025 Ediththebrand. All rights reserved.
           </p>
           <p className="text-[#8A7D72] text-xs">
-            4 years of skin-first service · Lagos, Nigeria
+            4 years of skin-first service - Lagos, Nigeria
           </p>
         </div>
       </div>

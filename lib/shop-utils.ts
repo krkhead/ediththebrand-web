@@ -23,14 +23,17 @@ function normalize(value: string) {
 }
 
 export function formatNaira(amount: number) {
-  return `₦${amount.toLocaleString()}`;
+  return `NGN ${amount.toLocaleString("en-NG")}`;
 }
 
 export function getProductImageUrls(product: Pick<Product, "images">) {
   const rawImages = product.images as unknown;
 
   if (Array.isArray(rawImages)) {
-    return rawImages.filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+    return rawImages.filter(
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0
+    );
   }
 
   if (typeof rawImages === "string" && rawImages.trim()) {
@@ -52,7 +55,11 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export function matchesCollection(productCollectionSlug: string | null, productCategory: string | null, collection: { slug: string; name: string }) {
+export function matchesCollection(
+  productCollectionSlug: string | null,
+  productCategory: string | null,
+  collection: { slug: string; name: string }
+) {
   if (productCollectionSlug) {
     return productCollectionSlug === collection.slug;
   }
@@ -63,7 +70,8 @@ export function matchesCollection(productCollectionSlug: string | null, productC
 
   return (
     slugify(productCategory) === collection.slug ||
-    productCategory.trim().toLowerCase() === collection.name.trim().toLowerCase()
+    productCategory.trim().toLowerCase() ===
+      collection.name.trim().toLowerCase()
   );
 }
 
@@ -99,6 +107,20 @@ export function matchesProductQuery(product: Product, query: string) {
     .some((value) => normalize(value).includes(normalizedQuery));
 }
 
+export function isStorefrontReadyProduct(product: Product) {
+  const normalizedName = normalize(product.name);
+  const normalizedSlug = normalize(product.slug);
+  const normalizedDescription = normalize(product.description ?? "");
+  const hasImage = getProductImageUrls(product).length > 0;
+
+  const isObviousDraft =
+    /^test[\s-]*\d*$/.test(normalizedName) ||
+    /^test[\s-]*\d*$/.test(normalizedSlug) ||
+    normalizedDescription === "test product";
+
+  return !isObviousDraft && hasImage;
+}
+
 export function getProductStatusBadges(product: Product) {
   const badges: string[] = [];
 
@@ -124,11 +146,17 @@ export function sortProducts(products: Product[], sort: ProductSort) {
     }
 
     if (sort === "price-asc") {
-      return (parseFloat(left.price ?? "0") || 0) - (parseFloat(right.price ?? "0") || 0);
+      return (
+        (parseFloat(left.price ?? "0") || 0) -
+        (parseFloat(right.price ?? "0") || 0)
+      );
     }
 
     if (sort === "price-desc") {
-      return (parseFloat(right.price ?? "0") || 0) - (parseFloat(left.price ?? "0") || 0);
+      return (
+        (parseFloat(right.price ?? "0") || 0) -
+        (parseFloat(left.price ?? "0") || 0)
+      );
     }
 
     return (
@@ -190,7 +218,8 @@ export function selectDailyFeaturedProducts(
     day: "2-digit",
   }).format(date);
 
-  return [...products]
+  return products
+    .filter(isStorefrontReadyProduct)
     .sort((left, right) => {
       const leftHash = stableHash(`${dateKey}:${left.slug}`);
       const rightHash = stableHash(`${dateKey}:${right.slug}`);
