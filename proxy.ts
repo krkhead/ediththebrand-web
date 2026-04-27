@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import { adminAuth, getAdminSessionFromRequest } from "@/lib/admin-auth";
+import { adminAuth, getAdminSessionFromRequest } from "@/lib/admin-auth-edge";
 import { clerkRuntime } from "@/lib/clerk-config";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
@@ -17,9 +17,9 @@ const clerkProxy = clerkMiddleware(async (auth, req) => {
   }
 });
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
+export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   if (adminAuth.enabled) {
-    const session = getAdminSessionFromRequest(request);
+    const session = await getAdminSessionFromRequest(request);
 
     if (isAdminSignIn(request) && session) {
       return NextResponse.redirect(new URL("/admin", request.url));
