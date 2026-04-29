@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
       .from(products)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+    });
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });

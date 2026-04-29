@@ -21,7 +21,9 @@ export async function GET() {
       .from(categories)
       .orderBy(asc(categories.sortOrder), asc(categories.name));
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (error) {
     console.error("GET /api/categories error:", error);
     return NextResponse.json(placeholderCollections);
