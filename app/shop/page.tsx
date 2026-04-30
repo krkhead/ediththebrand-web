@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Layers3 } from "lucide-react";
+import ShopSearchForm from "@/components/shop/ShopSearchForm";
 import { db } from "@/lib/db";
 import { categories, type Category } from "@/lib/db/schema";
 import {
@@ -59,6 +60,7 @@ export default async function ShopLandingPage({
               A curated skincare storefront built for discovery, confidence and
               ease.
             </p>
+            <ShopSearchForm className="mt-8 max-w-xl" />
           </div>
         </div>
 
@@ -184,6 +186,7 @@ export default async function ShopLandingPage({
             Start with a collection. Browse by routine need, then dive into the
             products inside each edit.
           </p>
+          <ShopSearchForm className="mt-8 max-w-xl" />
         </div>
       </div>
 
